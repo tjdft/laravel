@@ -1,0 +1,26 @@
+{
+    "name": "tjdft/laravel",
+    "description": "Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "TJDFT"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TJDFT\\Laravel\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "TJDFT\\Laravel\\LaravelServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "socialiteproviders/keycloak": "^5.3"
+    }
+}

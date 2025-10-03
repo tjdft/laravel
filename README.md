@@ -80,20 +80,7 @@ Schema::create('users', function (Blueprint $table) {
 });
 ```
 
-**Este pacote possui a classe base e o serviço para consultar pessoas na API RH.**
-
-```php
-// Classe Base
-use TJDFT\Laravel\Services\PolvoService;
-
-// PessoaService
-use TJDFT\Laravel\Services\PessoaService;
-
-$pessoa = new PessoaService()->porCpf('12345678901');
-$pessoa = new PessoaService()->porLogin('t123456');
-```
-
-**Rotas protegidas**
+**Proteja as rotas.**
 
 ```php
 // routes/web.php
@@ -106,10 +93,14 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-**Desambiguação de perfil**  
 
-Algumas pessoas possuem mais de um vínculo no RH, ex: Servidor + Pensionista.  
-O usuário será redirecionado automaticamente para a tela de seleção de perfil.
+**Rode as migrations.** 
+
+```bash
+# Esta ação destruirá e recriará o banco!
+
+php artisan migrate:fresh --seed
+```
 
 
 ## Autorização
@@ -250,6 +241,22 @@ class DatabaseSeeder extends Seeder
 
 ```bash
 php artisan migrate:fresh --seed
+```
+
+## API RH
+
+
+Este pacote possui a classe base e o serviço para consultar pessoas na API RH.
+
+```php
+// Classe base
+use TJDFT\Laravel\Services\PolvoService;
+
+// Consulta de pessoas
+use TJDFT\Laravel\Services\PessoasPolvoService;
+
+$pessoa = new PessoasPolvoService()->porCpf('12345678901');
+$pessoa = new PessoasPolvoService()->porLogin('t123456');
 ```
 
 ## Search

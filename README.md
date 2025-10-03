@@ -21,17 +21,17 @@ composer require tjdft/laravel
 **Todas as configurações estão expostas como variáveis de ambiente.**
 
 ```bash
-.env
+# .env
 
 TJDFT_PERMISSION_ACTION=App\Actions\AtualizarPermissionsLoginAction
 TJDFT_KEYCLOAK_REDIRECT_URI=/auth/callback/keycloak'
-#...
+# ...
 ```
 
 
 ## Translations
 
-```
+```bash
 # Altere em `.env`
 
 APP_LOCALE=pt_BR

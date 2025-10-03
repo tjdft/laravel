@@ -9,7 +9,7 @@ return new class extends Migration {
     public function up(): void
     {
         $schema = config('tjdft.pgsql_extensions.schema');
-        $schema_name = $schema ? "SCHEMA $schema." : '';
+        $schema_name = $schema ? "SCHEMA $schema" : '';
         $schema_dot = $schema ? "$schema." : '';
 
         // Extensões

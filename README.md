@@ -3,18 +3,40 @@
 Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.
 
 - Integração com API RH (Polvo).
-- Autenticação via Keycloak usando pacote `socialiteproviders/keycloak`.
-- Autorização via `Roles`, `Permissions` e `Grants`.
+- Fluxo de autenticação OAUTH2 via pacote `socialiteproviders/keycloak`.
+- Interface para gerenciamento de autorização via `ACL`.
+- Gerenciamento de perfil para pessoas com múltiplos vínculos.
 - Trait `HasSearchAny` para busca simplificada em múltiplos campos.
 - Trait `WithPaginationAndReset` para paginação com Livewire.
+- Translations comuns em `pt_BR`.
 
 ## Instalação
 
 ```bash
 composer require tjdft/laravel
-
-php artisan migrate:fresh --seed
 ```
+
+## Configuração
+
+**Todas as configurações estão expostas como variáveis de ambiente.**
+
+```bash
+.env
+
+TJDFT_PERMISSION_ACTION=App\Actions\AtualizarPermissionsLoginAction
+TJDFT_KEYCLOAK_REDIRECT_URI=/auth/callback/keycloak'
+#...
+```
+
+
+## Translations
+
+```
+# Altere em `.env`
+
+APP_LOCALE=pt_BR
+```
+
 
 ## Autenticação
 
@@ -71,6 +93,20 @@ $pessoa = new PessoaService()->porLogin('t123456');
 **Desambiguação de perfil**  
 Algumas pessoas possuem mais de um vínculo no RH, ex: Servidor + Pensionista.  
 O usuário será redirecionado automaticamente para a tela de seleção de perfil.
+
+**Rotas protegidas**
+
+```php
+// routes/web.php
+
+Route::middleware('auth')->group(function () {
+   
+    Volt::route('/painel', 'painel');
+    // ...
+
+});
+```
+
 
 ## Autorização
 

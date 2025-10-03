@@ -20,7 +20,7 @@ composer require tjdft/laravel
 
 ## Configuração
 
-**Todas as configurações podem ser ajustadas via variáveis de ambiente.**
+**Todas as configurações do pacote podem ser ajustadas via variáveis de ambiente.**
 
 ```bash
 # .env
@@ -28,22 +28,25 @@ composer require tjdft/laravel
 TJDFT_PERMISSION_ACTION=...
 TJDFT_KEYCLOAK_REDIRECT_URI=...
 TJDFT_POLVO_API_URL
+
 ...
+
+# EXEMPLO:
+# Define o schema onde serão criadas as extensions do Postgres.
+# O schema padrão é `public`.
+# Alterando o schema para `core`.
+
+TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
 ```
 
 
-## Translations
-
-**Altere em `.env`**
+**Altere o idioma em `.env`**
 
 ```bash
 APP_LOCALE=pt_BR
 ```
 
-
-## Autenticação
-
-**Crie as variáveis de ambiente em `.env`.**
+**Crie as novas variáveis de ambiente em `.env`.**
 
 ```bash
 # API RH
@@ -139,12 +142,12 @@ class PermissionsSeeder extends Seeder
         
         Permission::create([
             'name' => 'comprovante-rendimentos.processar',
-            'description' => 'Comprovantes de Rendimentos - Processar',
+            'description' => 'Comprovantes de Rendimentos / Processar',
         ]);
         
         Permission::create([
             'name' => 'comprovante-rendimentos.visualizar',
-            'description' => 'Comprovantes de Rendimentos - Visualizar',
+            'description' => 'Comprovantes de Rendimentos / Visualizar',
         ]);
         
         // Admin tem todas as permissões
@@ -174,6 +177,14 @@ class PermissionsSeeder extends Seeder
         // Veja a seguir.
     }
 }
+```
+
+**Rode as migrations.** 
+
+```bash
+# Esta ação destruirá e recriará o banco!
+
+php artisan migrate:fresh --seed
 ```
 
 **Adicione a verificação de permission nos componentes.**
@@ -242,6 +253,19 @@ class DatabaseSeeder extends Seeder
 ```bash
 php artisan migrate:fresh --seed
 ```
+
+
+## Rotas
+
+Utilize as seguintes rotas para o respectivo propósito.
+
+| ROTA | DESCRIÇÃO |
+|---:|---|
+| /auth/perfil | Interface para desambiguação de perfil |
+| /auth/permissions | Interface para gerenciamento de permissões |
+| /auth/logout/keycloak | Rota para logout da aplicação |
+
+
 
 ## API RH
 

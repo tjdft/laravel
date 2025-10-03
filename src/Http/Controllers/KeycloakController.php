@@ -103,8 +103,6 @@ class KeycloakController extends Controller
                 // Sumprime erro caso a classe não exista
             }
 
-            //new AtualizarPermissionsLoginAction($users->first())->execute();
-
             // Se houver mais de um cadastro, redireciona para página de escolha
             if ($users->count() > 1) {
                 return redirect('/auth/perfil');

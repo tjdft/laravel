@@ -27,7 +27,7 @@ composer require tjdft/laravel
 
 TJDFT_PERMISSION_ACTION=...
 TJDFT_KEYCLOAK_REDIRECT_URI=...
-TJDFT_POLVO_API_URL
+TJDFT_POLVO_API_URL=...
 
 ...
 
@@ -46,20 +46,26 @@ TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
 APP_LOCALE=pt_BR
 ```
 
+**Altere o timezone em `config/app.php`**
+
+```php
+'timezone' => 'America/Sao_Paulo',
+```
+
 **Crie as novas variáveis de ambiente em `.env`.**
 
 ```bash
 # API RH
 TJDFT_POLVO_API_URL=https://<URL_API_RH>/graphql
 TJDFT_POLVO_AUTH_URL=https://<URL_KEYCLOAK>/auth/realms/<NOME_REALM>/protocol/openid-connect/token
-TJDFT_POLVO_CLIENT_ID=
-TJDFT_POLVO_CLIENT_SECRET=
+TJDFT_POLVO_CLIENT_ID=...
+TJDFT_POLVO_CLIENT_SECRET=...
 
 # Keycloak
 TJDFT_KEYCLOAK_BASE_URL=https://<URL_KEYCLOAK>/auth
 TJDFT_KEYCLOAK_REALMS=<NOME_REALM>
-TJDFT_KEYCLOAK_CLIENT_ID=
-TJDFT_KEYCLOAK_CLIENT_SECRET=
+TJDFT_KEYCLOAK_CLIENT_ID=...
+TJDFT_KEYCLOAK_CLIENT_SECRET=...
 ```
 
 **Ajuste a migration existente `users`.**
@@ -91,6 +97,7 @@ Schema::create('users', function (Blueprint $table) {
 Route::middleware('auth')->group(function () {
    
     Volt::route('/painel', 'painel');
+
     // ...
 
 });
@@ -139,12 +146,14 @@ class PermissionsSeeder extends Seeder
             'name' => 'permissoes.gerenciar',
             'description' => 'Permissões / Gerenciar',
         ]);
-        
+
+        // Processar comprovantes
         Permission::create([
             'name' => 'comprovante-rendimentos.processar',
             'description' => 'Comprovantes de Rendimentos / Processar',
         ]);
-        
+
+        // Visualizar comprovantes
         Permission::create([
             'name' => 'comprovante-rendimentos.visualizar',
             'description' => 'Comprovantes de Rendimentos / Visualizar',
@@ -153,7 +162,7 @@ class PermissionsSeeder extends Seeder
         // Admin tem todas as permissões
         Role::create([
             'name' => 'admin', 
-            'description' => 'Admin'
+            'description' => 'Administrador'
         ])->givePermissionTo(Permission::all());
         
         // Funcionário tem permissão apenas para visualizar
@@ -172,9 +181,24 @@ class PermissionsSeeder extends Seeder
             'nome' => 'Maria Silva'
         ])->assignRole('admin');
         
-        // Note que é inviável atribuir previamente as roles para milhares de `funcionários`.
-        // As roles devem ser definidas em tempo de execução após o proceso de login.
-        // Veja a seguir.
+        // Note que é inviável atribuir previamente as roles para milhares de `funcionários`.        
+        // Confira o tópico `Roles dinâmicas`
+    }
+}
+```
+
+**Configure os seeders.**
+
+```php
+// database/seeders/DatabaseSeeder
+
+class DatabaseSeeder extends Seeder
+{   
+    public function run(): void
+    {
+        $this->call([
+            PermissionsSeeder::class,
+        ]);
     }
 }
 ```
@@ -187,7 +211,7 @@ class PermissionsSeeder extends Seeder
 php artisan migrate:fresh --seed
 ```
 
-**Adicione a verificação de permission nos componentes.**
+**Adicione a verificação de autorização nos componentes.**
 
 ```php
 public function mount(): void 
@@ -197,13 +221,17 @@ public function mount(): void
 }
 ```
 
-**Defina as roles em tempo de execução.**
+## Roles dinâmicas
+
+**Esta classe é invocada automaticamente após o login do usuário.**
 
 ```bash
-# Esta classe é invocada automaticamente após o login do usuário.
+# .env
 
 TJDFT_PERMISSION_ACTION=App\Actions\AtualizarPermissionsLoginAction
 ```
+
+**Defina a lógica para atribuição de roles.**
 
 ```php
 // app/Actions/AtualizarPermissionsLoginAction.php
@@ -232,27 +260,6 @@ class AtualizarPermissionsLoginAction
 }
 ```
 
-**Configure os seeders.**
-
-```php
-// database/seeders/DatabaseSeeder
-
-class DatabaseSeeder extends Seeder
-{   
-    public function run(): void
-    {
-        $this->call([
-            PermissionsSeeder::class,
-        ]);
-    }
-}
-```
-
-**Execute**
-
-```bash
-php artisan migrate:fresh --seed
-```
 
 
 ## Rotas

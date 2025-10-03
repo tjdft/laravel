@@ -93,10 +93,6 @@ $pessoa = new PessoaService()->porCpf('12345678901');
 $pessoa = new PessoaService()->porLogin('t123456');
 ```
 
-**Desambiguação de perfil**  
-Algumas pessoas possuem mais de um vínculo no RH, ex: Servidor + Pensionista.  
-O usuário será redirecionado automaticamente para a tela de seleção de perfil.
-
 **Rotas protegidas**
 
 ```php
@@ -109,6 +105,11 @@ Route::middleware('auth')->group(function () {
 
 });
 ```
+
+**Desambiguação de perfil**  
+
+Algumas pessoas possuem mais de um vínculo no RH, ex: Servidor + Pensionista.  
+O usuário será redirecionado automaticamente para a tela de seleção de perfil.
 
 
 ## Autorização

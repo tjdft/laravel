@@ -12,11 +12,24 @@ Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.
 - Classes de **exception** padronizadas.
 - Arquivos de **translation** em `pt_BR`.
 
+## Importante
+
+🚨  Estas configurações aplicam-se apenas para **novos projetos.**
+
+
 ## Instalação
 
 ```bash
 composer require tjdft/laravel
 ```
+
+## Dependências
+
+```bash
+composer require robsontenorio/mary
+php artisan mary:install
+```
+
 
 ## Configuração
 

@@ -1,14 +1,16 @@
-# TJDFT Laravel
+# TJDFT / Laravel
 
 Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.
 
 - Integração com **API RH**.
-- Fluxo de autenticação **OAUTH2** via pacote `socialiteproviders/keycloak`.
+- Fluxo de autenticação **OAUTH2**.
 - Interface para gerenciamento de **permissões**.
 - Desambiguação de perfil para pessoas com **múltiplos vínculos**.
 - Trait `HasSearchAny` para busca simplificada em **múltiplos campos**.
-- Trait `WithPaginationAndReset` para paginação com **Livewire**.
-- **Translations** comuns em `pt_BR`.
+- Trait `WithPaginationAndReset` para paginação simplificada com **Livewire**.
+- Utilitário `Numero` para diversas **formatações**.
+- Classes de **exception** padronizadas.
+- Arquivos de **translation** em `pt_BR`.
 
 ## Instalação
 
@@ -136,6 +138,12 @@ class PermissionsSeeder extends Seeder
         if (Permission::count()) {
             return;
         }
+
+        // Esta permissão é obrigatória e deve estar atribuída aos administradores
+        Permission::create([
+            'name' => 'permissoes.gerenciar',
+            'description' => 'Permissões / Gerenciar',
+        ]);
         
         Permission::create([
             'name' => 'comprovante-rendimentos.processar',
@@ -290,7 +298,16 @@ Numero::cnpj('12345678000195')      # 12.345.678-0001/95
 
 ## Livewire
 
+Utilize o trait `WithPaginationAndReset` para reset automático de paginação, quando as propriedades de filtro forem atualizadas.
+
 ```php
+use TJDFT\Laravel\Traits\WithPaginationAndReset;
+
+new class extends Component {
+    use WithPaginationAndReset;
+
+    // ...
+}
 
 ```
 

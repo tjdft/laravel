@@ -13,7 +13,12 @@ Route::middleware('web')->group(function () {
 });
 
 Route::middleware(['web', 'auth'])->group(function () {
+    // Seleção de perfil
     Volt::route('/auth/perfil', 'perfil');
+
+    // Permissions
+    Volt::route('/auth/permissions', 'permissions.index');
+    Volt::route('/auth/permissions/{user}', 'permissions.show');
 });
 
 

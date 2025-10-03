@@ -2,13 +2,13 @@
 
 Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.
 
-- Integração com API RH (Polvo).
-- Fluxo de autenticação OAUTH2 via pacote `socialiteproviders/keycloak`.
-- Interface para gerenciamento de autorização via `ACL`.
-- Gerenciamento de perfil para pessoas com múltiplos vínculos.
-- Trait `HasSearchAny` para busca simplificada em múltiplos campos.
-- Trait `WithPaginationAndReset` para paginação com Livewire.
-- Translations comuns em `pt_BR`.
+- Integração com **API RH**.
+- Fluxo de autenticação **OAUTH2** via pacote `socialiteproviders/keycloak`.
+- Interface para gerenciamento de **permissões**.
+- Desambiguação de perfil para pessoas com **múltiplos vínculos**.
+- Trait `HasSearchAny` para busca simplificada em **múltiplos campos**.
+- Trait `WithPaginationAndReset` para paginação com **Livewire**.
+- **Translations** comuns em `pt_BR`.
 
 ## Instalação
 
@@ -18,22 +18,23 @@ composer require tjdft/laravel
 
 ## Configuração
 
-**Todas as configurações estão expostas como variáveis de ambiente.**
+**Todas as configurações podem ser ajustadas via variáveis de ambiente.**
 
 ```bash
 # .env
 
-TJDFT_PERMISSION_ACTION=App\Actions\AtualizarPermissionsLoginAction
-TJDFT_KEYCLOAK_REDIRECT_URI=/auth/callback/keycloak'
-# ...
+TJDFT_PERMISSION_ACTION=...
+TJDFT_KEYCLOAK_REDIRECT_URI=...
+TJDFT_POLVO_API_URL
+...
 ```
 
 
 ## Translations
 
-```bash
-# Altere em `.env`
+**Altere em `.env`**
 
+```bash
 APP_LOCALE=pt_BR
 ```
 

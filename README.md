@@ -14,7 +14,7 @@ Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.
 
 ## Importante
 
-🚨 Estas configurações aplicam-se apenas para **novos projetos.** 
+🚨 Estas configurações aplicam-se apenas para **novos projetos.**   
 🚨 O projeto deve ter instalado previamente a biblioteca **maryUI**.
 
 

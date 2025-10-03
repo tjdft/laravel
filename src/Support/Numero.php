@@ -53,6 +53,7 @@ class Numero
     {
         // Remove tudo que não é dígito
         $cpf = preg_replace('/\D/', '', $cpf);
+        
         // Retorna o CPF original se não tiver 11 dígitos
         if (strlen($cpf) !== 11) {
             return $cpf;

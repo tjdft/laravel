@@ -14,22 +14,17 @@ Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.
 
 ## Importante
 
-🚨  Estas configurações aplicam-se apenas para **novos projetos.** 🚨
+🚨 Estas configurações aplicam-se apenas para **novos projetos.** 🚨
 
+## Dependências
+
+O projeto deve ter instalado previamente a biblioteca **maryUI**.
 
 ## Instalação
 
 ```bash
 composer require tjdft/laravel
 ```
-
-## Dependências
-
-```bash
-composer require robsontenorio/mary
-php artisan mary:install
-```
-
 
 ## Configuração
 
@@ -51,7 +46,6 @@ TJDFT_POLVO_API_URL=...
 
 TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
 ```
-
 
 **Altere o idioma em `.env`**
 
@@ -116,15 +110,13 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-
-**Rode as migrations.** 
+**Rode as migrations.**
 
 ```bash
 # Esta ação destruirá e recriará o banco!
 
 php artisan migrate:fresh --seed
 ```
-
 
 ## Autorização
 
@@ -216,7 +208,7 @@ class DatabaseSeeder extends Seeder
 }
 ```
 
-**Rode as migrations.** 
+**Rode as migrations.**
 
 ```bash
 # Esta ação destruirá e recriará o banco!
@@ -273,22 +265,17 @@ class AtualizarPermissionsLoginAction
 }
 ```
 
-
-
 ## Rotas
 
 Utilize as seguintes rotas para o respectivo propósito.
 
-| ROTA | DESCRIÇÃO |
-|---:|---|
-| /auth/perfil | Interface para desambiguação de perfil |
-| /auth/permissions | Interface para gerenciamento de permissões |
-| /auth/logout/keycloak | Rota para logout da aplicação |
-
-
+|                  ROTA | DESCRIÇÃO                                  |
+|----------------------:|--------------------------------------------|
+|          /auth/perfil | Interface para desambiguação de perfil     |
+|     /auth/permissions | Interface para gerenciamento de permissões |
+| /auth/logout/keycloak | Rota para logout da aplicação              |
 
 ## API RH
-
 
 Este pacote possui a classe base e o serviço para consultar pessoas na API RH.
 

@@ -13,6 +13,8 @@ return new class extends Migration {
         $schema_dot = $schema ? "$schema." : '';
 
         // Extensões
+        DB::statement('DROP EXTENSION IF EXISTS unaccent;');
+        DB::statement('DROP EXTENSION IF EXISTS pg_trgm;');
         DB::statement("CREATE EXTENSION IF NOT EXISTS unaccent {$schema_name}");
         DB::statement("CREATE EXTENSION IF NOT EXISTS pg_trgm {$schema_name}");
 

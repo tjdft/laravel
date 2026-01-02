@@ -32,6 +32,8 @@ class KeycloakController extends Controller
         // Quando for via wire:navigate
         if ($request->header('Sec-Fetch-Mode') == 'cors') {
             echo "Autenticando ...   <script>window.location.href = '{$redirect}'; </script>";
+
+            return null;
         }
 
         return redirect($redirect);

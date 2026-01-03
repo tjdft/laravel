@@ -3,7 +3,7 @@
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Livewire\Volt\Component;
+use Livewire\Component;
 use TJDFT\Laravel\Traits\WithPaginationAndReset;
 
 new class extends Component {

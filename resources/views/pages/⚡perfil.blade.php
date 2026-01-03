@@ -2,7 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Support\Collection;
-use Livewire\Volt\Component;
+use Livewire\Component;
 
 new class extends Component {
     public function mount(): void

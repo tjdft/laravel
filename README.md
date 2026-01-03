@@ -2,10 +2,12 @@
 
 Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.
 
-- Integração com **API RH**.
-- Fluxo de autenticação **OAUTH2**.
+- Integração com a **API RH**.
+- Fluxo completo de autenticação **Keycloak**.
+- Funcionalidade de **Impersonate**.
 - Interface para gerenciamento de **permissões**.
-- Desambiguação de perfil para pessoas com **múltiplos vínculos**.
+- Desambiguação de perfil para pessoas com **múltiplos vínculos via CPF**.
+- Ativa extensões úteis do **PostgreSQL**.
 - Trait `HasSearchAny` para busca simplificada em **múltiplos campos**.
 - Trait `WithPaginationAndReset` para paginação simplificada com **Livewire**.
 - Utilitário `Numero` para diversas **formatações**.
@@ -17,7 +19,6 @@ Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.
 🚨 Estas configurações aplicam-se apenas para **novos projetos.**   
 🚨 O projeto deve ter instalado previamente a biblioteca **maryUI**.
 
-
 ## Instalação
 
 ```bash
@@ -26,35 +27,16 @@ composer require tjdft/laravel
 
 ## Configuração
 
-**Todas as configurações do pacote podem ser ajustadas via variáveis de ambiente.**
+**Altere o timezone em `config/app.php`**
 
-```bash
-# .env
-
-TJDFT_PERMISSION_ACTION=...
-TJDFT_KEYCLOAK_REDIRECT_URI=...
-TJDFT_POLVO_API_URL=...
-
-...
-
-# EXEMPLO:
-# Define o schema onde serão criadas as extensions do Postgres.
-# O schema padrão é `public`.
-# Alterando o schema para `core`.
-
-TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
+```php
+'timezone' => 'America/Sao_Paulo',
 ```
 
 **Altere o idioma em `.env`**
 
 ```bash
 APP_LOCALE=pt_BR
-```
-
-**Altere o timezone em `config/app.php`**
-
-```php
-'timezone' => 'America/Sao_Paulo',
 ```
 
 **Crie as novas variáveis de ambiente em `.env`.**
@@ -65,12 +47,17 @@ TJDFT_POLVO_API_URL=https://<URL_API_RH>/graphql
 TJDFT_POLVO_AUTH_URL=https://<URL_KEYCLOAK>/auth/realms/<NOME_REALM>/protocol/openid-connect/token
 TJDFT_POLVO_CLIENT_ID=...
 TJDFT_POLVO_CLIENT_SECRET=...
+TJDFT_POLVO_CACHE_TTL='1 hour'
 
 # Keycloak
 TJDFT_KEYCLOAK_BASE_URL=https://<URL_KEYCLOAK>/auth
 TJDFT_KEYCLOAK_REALMS=<NOME_REALM>
 TJDFT_KEYCLOAK_CLIENT_ID=...
 TJDFT_KEYCLOAK_CLIENT_SECRET=...
+
+# Schema onde devem ser ativadas as extensões do PostgreSQL
+# Use apenas se o schema principal da aplicação for diferente de `public`.
+TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
 ```
 
 **Ajuste a migration existente `users`.**
@@ -85,26 +72,13 @@ Schema::create('users', function (Blueprint $table) {
     $table->string('nome');
     $table->string('email')->nullable();
     $table->string('foto')->nullable();
+    $table->json('localizacao')->nullable();
     $table->string('rh_tipo')->nullable();
     $table->string('rh_status')->nullable();
     $table->timestamps();
 
     $table->unique(['cpf', 'matricula']);
     $table->index(['cpf', 'matricula']);
-});
-```
-
-**Proteja as rotas.**
-
-```php
-// routes/web.php
-
-Route::middleware('auth')->group(function () {
-   
-    Volt::route('/painel', 'painel');
-
-    // ...
-
 });
 ```
 
@@ -131,7 +105,7 @@ class User extends Authenticatable
 }
 ```
 
-**Crie as roles e permissions.**
+**Crie as roles e permissions (EXEMPLO).**
 
 ```php
 // database/seeders/PermissionsSeeder.php
@@ -140,16 +114,11 @@ class PermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        if (Permission::count()) {
+        // Permissão inicial criada pelo pacote
+        if (Permission::where('name', '<>', 'permissoes.gerenciar')->count()) {
             return;
         }
-
-        // Esta permissão é obrigatória e deve estar atribuída aos administradores
-        Permission::create([
-            'name' => 'permissoes.gerenciar',
-            'description' => 'Permissões / Gerenciar',
-        ]);
-
+        
         // Processar comprovantes
         Permission::create([
             'name' => 'comprovante-rendimentos.processar',
@@ -162,19 +131,19 @@ class PermissionsSeeder extends Seeder
             'description' => 'Comprovantes de Rendimentos / Visualizar',
         ]);
         
-        // Admin tem todas as permissões
-        Role::create([
-            'name' => 'admin', 
-            'description' => 'Administrador'
-        ])->givePermissionTo(Permission::all());
-        
-        // Funcionário tem permissão apenas para visualizar
+        // FUNCIONÁRIO tem permissão apenas para visualizar
         Role::create([
             'name' => 'funcionario', 
             'description' => 'Funcionário'
          ])->givePermissionTo([
             'comprovante-rendimentos.visualizar',
         ]);
+        
+        // ADMIN tem todas as permissões
+        Role::create([
+            'name' => 'admin', 
+            'description' => 'Administrador'
+        ])->givePermissionTo(Permission::all());               
         
         // Defina os administradores iniciais do sistema
         User::create([
@@ -200,6 +169,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            // ...
             PermissionsSeeder::class,
         ]);
     }
@@ -226,15 +196,13 @@ public function mount(): void
 
 ## Roles dinâmicas
 
-**Esta classe é invocada automaticamente após o login do usuário.**
+**Esta é a classe padrão da aplicação invocada automaticamente após o login do usuário.**
 
 ```bash
-# .env
-
-TJDFT_PERMISSION_ACTION=App\Actions\AtualizarPermissionsLoginAction
+TJDFT_PERMISSIONS_ACTION=App\Actions\AtualizarPermissionsLoginAction
 ```
 
-**Defina a lógica para atribuição de roles.**
+**Utilize-a para definir a lógica personalizada da aplicação para atribuição de roles ou permisions.**
 
 ```php
 // app/Actions/AtualizarPermissionsLoginAction.php
@@ -275,20 +243,62 @@ Utilize as seguintes rotas para o respectivo propósito.
 
 ## API RH
 
-Este pacote possui a classe base e o serviço para consultar pessoas na API RH.
+Este pacote possui a classe base para consultas na API RH.
 
 ```php
-// Classe base
-use TJDFT\Laravel\Services\PolvoService;
-
-// Consulta de pessoas
-use TJDFT\Laravel\Services\PessoasPolvoService;
-
-$pessoa = new PessoasPolvoService()->porCpf('12345678901');
-$pessoa = new PessoasPolvoService()->porLogin('t123456');
+class PolvoService { ... }
 ```
 
-## Search
+**Crie serviços de consulta baseados na classe `TJDFT\Laravel\Services\PolvoService`.**
+
+```php
+namespace App\Services;
+
+use Illuminate\Support\Collection;
+use TJDFT\Laravel\Services\PolvoService;
+
+
+class FeriasPolvoService extends PolvoService
+{
+     public function porMatricula(string $matricula): Collection
+     {
+        $query = "{ ... query GraphQL ... }";
+        
+        // Método herdado da classe PolvoService
+        $response = $this->graphql($query);
+
+        return collect($response['data']['servidor']['dadosFuncionais']['ferias']['data'] ?? []);
+     } 
+}
+```
+
+**Todas as consultas GraphQL tem um prazo de cache padrão de **1 hora**.**
+
+```bash
+TJDFT_POLVO_CACHE_TTL='1 hour'
+```
+
+**Pra definir um prazo específico apenas para algumas consultas, utilize o método `lembrar()`.**
+
+```php
+// aceita qualquer string válida do `Carbon`
+
+$ferias = new FeriasPolvoService()->lembrar('1 day')->porMatricula("12345");
+```
+
+**Para desabilitar o cache em consultas específicas, utilize o método `semCache()`.**
+
+```php
+$ferias = new FeriasPolvoService()->semCache()->porMatricula("12345");
+```
+
+**Para desabilitar completamente o cache nas consultas GraphQL ajuste a variável de ambiente.**
+
+```bash
+TJDFT_POLVO_CACHE_TTL='0'
+```
+
+## Pesquisa
 
 **Adicione o trait `HasSearchAny` nos models.**
 
@@ -303,6 +313,8 @@ class Rubrica extends Authenticatable
 }
 ```
 
+**Exemplos de consultas.**
+
 ```php
 // Pesquisa em múltiplos campos, tratando acentuação e case sensitive automaticamente.
 Rubrica::query()->searchAny(['nome', 'sigla'], $valor)->get();
@@ -310,6 +322,8 @@ Rubrica::query()->searchAny(['nome', 'sigla'], $valor)->get();
 // Funciona também em colunas JSON
 Espelho::query()->searchAny(['dados->nome', 'dados->endereco'], $valor)->get();
 ```
+
+**Exemplo de índice.**
 
 ```php
 // Considere criar indices nas colunas JSON para melhorar a performance
@@ -335,7 +349,7 @@ Numero::cnpj('12345678000195')      # 12.345.678-0001/95
 
 ## Livewire
 
-Utilize o trait `WithPaginationAndReset` para reset automático de paginação, quando as propriedades de filtro forem atualizadas.
+Utilize o trait `WithPaginationAndReset` nas telas com tabelas para reset automático de paginação, quando as propriedades de filtro forem atualizadas.
 
 ```php
 use TJDFT\Laravel\Traits\WithPaginationAndReset;

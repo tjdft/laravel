@@ -59,7 +59,7 @@ class KeycloakController extends Controller
             $keycloakUser = Socialite::driver('keycloak')->stateless()->user();
 
             // Cpf do usuário no Keycloak
-            $cpf = $keycloakUser['cpf'][0] ?? null;
+            $cpf = $keycloakUser['cpf'] ?? $keycloakUser['cpf'][0] ?? null;
 
             if (! $cpf) {
                 throw new LogicException('Usuário sem CPF cadastrado no Keycloak.');
@@ -81,6 +81,7 @@ class KeycloakController extends Controller
                         'foto' => $pessoa['foto'] ?? null,
                         'nome' => $pessoa['nomeFinal'] ?? $keycloakUser->getName(),
                         'email' => $keycloakUser->getEmail(),
+                        'localizacao' => $pessoa['localizacao'] ?? null,
                         'rh_tipo' => $pessoa['tipo'],
                         'rh_status' => $pessoa['status'],
                     ]

@@ -6,7 +6,7 @@ return [
      * A classe invocada antes de finalizar o processo de login.
      * Utilize-a para definir a lógica de concessão dinâmica de roles do usuário.
      */
-    'permissions_action' => env('TJDFT_PERMISSION_ACTION', 'App\Actions\AtualizarPermissionsLoginAction'),
+    'permissions_action' => env('TJDFT_PERMISSIONS_ACTION', 'App\Actions\AtualizarPermissionsLoginAction'),
 
     /**
      * Nome do schema onde deverá ser criada as extensões do PostgreSQL.
@@ -30,6 +30,7 @@ return [
         'auth_url' => env('TJDFT_POLVO_AUTH_URL'),
         'client_id' => env('TJDFT_POLVO_CLIENT_ID'),
         'client_secret' => env('TJDFT_POLVO_CLIENT_SECRET'),
+        'cache_ttl' => env('TJDFT_POLVO_CACHE_TTL', '1 hour'),
     ],
 
     // KEYCLOAK

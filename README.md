@@ -140,10 +140,8 @@ class PermissionsSeeder extends Seeder
         ]);
         
         // ADMIN tem todas as permissões
-        Role::create([
-            'name' => 'admin', 
-            'description' => 'Administrador'
-        ])->givePermissionTo(Permission::all());               
+        // A role `admin` já é criada automaticamente pelo pacote
+        Role::firstWhere('name', 'admin')->givePermissionTo(Permission::all());     
         
         // Defina os administradores iniciais do sistema
         User::create([
@@ -238,6 +236,7 @@ Utilize as seguintes rotas para o respectivo propósito.
 |                  ROTA | DESCRIÇÃO                                  |
 |----------------------:|--------------------------------------------|
 |          /auth/perfil | Interface para desambiguação de perfil     |
+|     /auth/impersonate | Interface para personificar usuários       |
 |     /auth/permissions | Interface para gerenciamento de permissões |
 | /auth/logout/keycloak | Rota para logout da aplicação              |
 

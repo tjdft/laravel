@@ -34,7 +34,7 @@ class LaravelServiceProvider extends ServiceProvider
     public function register()
     {
         // Carrega os componentes do Livewire Volt
-        Livewire::addNamespace('tjdft', __DIR__ . '/../resources/views');
+        Livewire::addNamespace('tjdft', __DIR__ . '/../resources/views/pages');
 
         // Proíbe comandos destrutivos em produção
         DB::prohibitDestructiveCommands($this->app->isProduction());

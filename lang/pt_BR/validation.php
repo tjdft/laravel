@@ -13,7 +13,8 @@ return [
     |
     */
 
-    'required' => ':attribute é obrigatório.',
+    'required' => 'Compo obrigatório.',
+    'unique' => 'Este valor já está em uso.',
 
     /*
     |--------------------------------------------------------------------------

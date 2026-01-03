@@ -57,8 +57,10 @@ class PessoasPolvoService extends PolvoService
                   nomeFinal
                   email
                   login
+                  cpf
                   foto
                   tipo
+                  status
                   localizacao{
                     id
                     codigo

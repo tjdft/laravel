@@ -13,11 +13,14 @@ Route::middleware('web')->group(function () {
 
 Route::middleware(['web', 'auth'])->group(function () {
     // Seleção de perfil
-    Route::livewire('/auth/perfil', 'tjdft::pages.perfil');
+    Route::livewire('/auth/perfil', 'tjdft::perfil');
 
     // Permissions
-    Route::livewire('/auth/permissions', 'tjdft::pages.permissions.index');
-    Route::livewire('/auth/permissions/{user}', 'tjdft::pages.permissions.show');
+    Route::livewire('/auth/permissions', 'tjdft::permissions.index');
+    Route::livewire('/auth/permissions/{user}', 'tjdft::permissions.show');
+
+    // Impersonate
+    Route::livewire('/auth/impersonate', 'tjdft::impersonate');
 });
 
 

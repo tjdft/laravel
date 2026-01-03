@@ -75,7 +75,7 @@ new class extends Component {
             empty-text="Nenhum resultado encontrado."
             class="arrows">
             @scope('cell_nome', $user)
-            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/imagens/empty-user.jpg" no-separator no-hover class="-mx-4 -my-3">
+            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/imagens/user.png" no-separator no-hover class="-mx-4 -my-3">
                 <x-slot:actions class="text-xs opacity-50">
                     {{ $user->roles()->pluck('description')->join(', ') ?: '-' }}
                 </x-slot:actions>

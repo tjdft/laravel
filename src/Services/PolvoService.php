@@ -20,12 +20,8 @@ class PolvoService
     /** Query executada **/
     protected static string $query;
 
-    /** Configurações do serviço */
-    protected array $config;
-
     public function __construct()
     {
-        $this->config = config('tjdft.polvo');
         $this->ttl = config('tjdft.polvo.cache_ttl');
     }
 

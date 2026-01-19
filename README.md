@@ -24,8 +24,6 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 - Arquivos de **translation** em `pt_BR`.
 - Ativa extensões úteis do **PostgreSQL**.
 
-<hr>
-
 ## Pré-requisitos
 
 ```

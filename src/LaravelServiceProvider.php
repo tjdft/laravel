@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 use SocialiteProviders\Keycloak\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
@@ -33,7 +32,7 @@ class LaravelServiceProvider extends ServiceProvider
 
     public function register()
     {
-        // Carrega os componentes do Livewire Volt
+        // Carrega os componentes do Livewire
         Livewire::addNamespace('tjdft', __DIR__ . '/../resources/views/pages');
 
         // Proíbe comandos destrutivos em produção

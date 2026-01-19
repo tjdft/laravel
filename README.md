@@ -1,29 +1,51 @@
 # TJDFT / Laravel
 
-Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.
+Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
-- Integração com a **API RH**.
-- Fluxo completo de autenticação **Keycloak**.
+<hr>
+
+## Recursos
+
+**Autenticação e Autorização:**
+
+- Fluxo de autenticação com **Keycloak**.
 - Funcionalidade de **Impersonate**.
-- Interface para gerenciamento de **permissões**.
-- Desambiguação de perfil para pessoas com **múltiplos vínculos via CPF**.
-- Ativa extensões úteis do **PostgreSQL**.
+- Gerenciamento de **Permissões**.
+
+**Integração com o RH:**
+
+- Classe base para consulta na **API RH**.
+- Desambiguação de perfil para pessoas com **múltiplos vínculos no RH**.
+
+**Funcionalidades adicionais:**
+
 - Trait `HasSearchAny` para busca simplificada em **múltiplos campos**.
 - Trait `WithPaginationAndReset` para paginação simplificada com **Livewire**.
-- Utilitário `Numero` para diversas **formatações**.
+- Utilitários `Numero` e `Data` para diversas **formatações** em tela.
 - Classes de **exception** padronizadas.
 - Arquivos de **translation** em `pt_BR`.
+- Ativa extensões úteis do **PostgreSQL**.
 
-## Importante
+<hr>
 
-🚨 Estas configurações aplicam-se apenas para **novos projetos.**   
-🚨 O projeto deve ter instalado previamente a biblioteca **maryUI**.
+## Pré-requisitos
+
+```
+composer require robsontenorio/mary
+php artisan mary:install
+```
+
+<br>
+<hr>
 
 ## Instalação
 
 ```bash
 composer require tjdft/laravel
 ```
+
+<br>
+<hr>
 
 ## Configuração
 
@@ -90,159 +112,12 @@ Schema::create('users', function (Blueprint $table) {
 php artisan migrate:fresh --seed
 ```
 
-## Autorização
-
-**Adicione o trait `HasGrant` no model `User`.**
-
-```php
-use TJDFT\Laravel\Traits\HasGrant;
-
-class User extends Authenticatable
-{
-    use HasFactory, Notifiable, HasGrant;
-    
-    //...
-}
-```
-
-**Crie as roles e permissions (EXEMPLO).**
-
-```php
-// database/seeders/PermissionsSeeder.php
-
-class PermissionsSeeder extends Seeder
-{
-    public function run(): void
-    {
-        // Permissão inicial criada pelo pacote
-        if (Permission::where('name', '<>', 'permissoes.gerenciar')->count()) {
-            return;
-        }
-        
-        // Processar comprovantes
-        Permission::create([
-            'name' => 'comprovante-rendimentos.processar',
-            'description' => 'Comprovantes de Rendimentos / Processar',
-        ]);
-
-        // Visualizar comprovantes
-        Permission::create([
-            'name' => 'comprovante-rendimentos.visualizar',
-            'description' => 'Comprovantes de Rendimentos / Visualizar',
-        ]);
-        
-        // FUNCIONÁRIO tem permissão apenas para visualizar
-        Role::create([
-            'name' => 'funcionario', 
-            'description' => 'Funcionário'
-         ])->givePermissionTo([
-            'comprovante-rendimentos.visualizar',
-        ]);
-        
-        // ADMIN tem todas as permissões
-        // A role `admin` já é criada automaticamente pelo pacote
-        Role::firstWhere('name', 'admin')->givePermissionTo(Permission::all());     
-        
-        // Defina os administradores iniciais do sistema
-        User::create([
-            'cpf' => '0123456789',
-            'matricula' => '123456',
-            'login' => 't123456',
-            'nome' => 'Maria Silva'
-        ])->assignRole('admin');
-        
-        // Note que é inviável atribuir previamente as roles para milhares de `funcionários`.        
-        // Confira o tópico `Roles dinâmicas`
-    }
-}
-```
-
-**Configure os seeders.**
-
-```php
-// database/seeders/DatabaseSeeder
-
-class DatabaseSeeder extends Seeder
-{   
-    public function run(): void
-    {
-        $this->call([
-            // ...
-            PermissionsSeeder::class,
-        ]);
-    }
-}
-```
-
-**Rode as migrations.**
-
-```bash
-# Esta ação destruirá e recriará o banco!
-
-php artisan migrate:fresh --seed
-```
-
-**Adicione a verificação de autorização nos componentes.**
-
-```php
-public function mount(): void 
-{
-    // Lança uma exceção 403 se o usuário não tiver a permissão
-    auth()->user()->authorize("comprovante-rendimentos.visualizar");
-}
-```
-
-## Roles dinâmicas
-
-**Esta é a classe padrão da aplicação invocada automaticamente após o login do usuário.**
-
-```bash
-TJDFT_PERMISSIONS_ACTION=App\Actions\AtualizarPermissionsLoginAction
-```
-
-**Utilize-a para definir a lógica personalizada da aplicação para atribuição de roles ou permisions.**
-
-```php
-// app/Actions/AtualizarPermissionsLoginAction.php
-
-<?php
-
-namespace App\Actions;
-
-use App\Models\User;
-
-class AtualizarPermissionsLoginAction
-{
-    public function __construct(private User $user)
-    {
-    }
-
-    public function execute(): void
-    {
-        // Baseado nos dados do usuário, defina uma lógica para atribuição de roles.
-        // Exemplo: se é um `SERVIDOR`, atribua a role 'funcionario'.
-        
-        if ($this->user->rh_tipo === 'SERVIDOR') {
-            $this->user->assignRole('funcionario');
-        }
-    }
-}
-```
-
-## Rotas
-
-Utilize as seguintes rotas para o respectivo propósito.
-
-|                  ROTA | DESCRIÇÃO                                  |
-|----------------------:|--------------------------------------------|
-|          /auth/perfil | Interface para desambiguação de perfil     |
-|     /auth/impersonate | Interface para personificar usuários       |
-|     /auth/permissions | Interface para gerenciamento de permissões |
-| /auth/logout/keycloak | Rota para logout da aplicação              |
+<br>
+<hr>
 
 ## API RH
 
-Este pacote possui a classe base para consultas na API RH.
+**Este pacote possui a classe base para consultas na API RH.**
 
 ```php
 class PolvoService { ... }
@@ -291,11 +166,14 @@ $ferias = new FeriasPolvoService()->lembrar('1 day')->porMatricula("12345");
 $ferias = new FeriasPolvoService()->semCache()->porMatricula("12345");
 ```
 
-**Para desabilitar completamente o cache nas consultas GraphQL ajuste a variável de ambiente.**
+**Para desabilitar completamente o cache tem todas as consultas GraphQL ajuste a variável de ambiente.**
 
 ```bash
 TJDFT_POLVO_CACHE_TTL='0'
 ```
+
+<br>
+<hr>
 
 ## Pesquisa
 
@@ -326,11 +204,13 @@ Espelho::query()->searchAny(['dados->nome', 'dados->endereco'], $valor)->get();
 
 ```php
 // Considere criar indices nas colunas JSON para melhorar a performance
-
 DB::statement("CREATE INDEX idx_meu_indice ON minha_tabela USING gin (immutable_unaccent(minha_coluna->>'meu_campo') gin_trgm_ops)");
 ```
 
-## Números
+<br>
+<hr>
+
+## Número
 
 ```php
 use TJDFT\Laravel\Support\Numero; 
@@ -346,7 +226,23 @@ Numero::cpf('12345678901')          # 123.456.789-01
 Numero::cnpj('12345678000195')      # 12.345.678-0001/95
 ```
 
-## Livewire
+<br>
+<hr>
+
+## Data
+
+```php
+use TJDFT\Laravel\Support\Data;
+
+Data::formatada("2025-04-12")     # 12/04/2025
+Data::formatada(null, "-")        # Se for nula mostra "-"
+Data::formatada($carbon, "-")     # Funciona também com objetos Carbon.
+```
+
+<br>
+<hr>
+
+## Paginação
 
 Utilize o trait `WithPaginationAndReset` nas telas com tabelas para reset automático de paginação, quando as propriedades de filtro forem atualizadas.
 
@@ -358,13 +254,242 @@ new class extends Component {
 
     // ...
 }
-
 ```
+
+<br>
+<hr>
 
 ## Exceptions
 
-A classe `AppException` automaticamente mostra um **toast** do **maryUI**.
+Utilize a classe `AppException` na lógica de negócio para automaicamente exibir um **toast** do **maryUI**.
 
 ```php
 throw new AppException("Você não pode fazer isso.");
 ```
+
+<br>
+<hr>
+
+## Autenticação
+
+Este pacote implementa o fluxo de autenticação via **Keycloak** para as rotas protegidas do sistema.
+
+```php
+// Rotas protegidas 
+Route::middleware('auth')->group(function () {   
+    
+    Route::livewire('/paginas/create', 'pages::paginas.create');
+    
+    // ...
+});
+```
+
+<br>
+<hr>
+
+## Impersonate
+
+Utilize a rota `/auth/impersonate` para a funcionalidade de personificação de usuários.  
+Somente usuários com a permissão `impersonate` poderão acessar esta tela.
+
+**Adicione no arquivo de layout o aviso de personificação, quando em uso.**
+
+```html
+<!-- EXEMPLO -->
+<body>
+    <div>
+        Menu superior ...
+    </div>
+
+    <!-- Aviso de Impersonate -->
+    <livewire:tjdft::impersonating />
+
+    <div>
+        Conteúdo da página ...
+    </div>
+</body>
+```
+
+<br>
+<hr>
+
+## Autorização
+
+**Adicione o trait `HasGrant` no model `User`.**
+
+```php
+use TJDFT\Laravel\Traits\HasGrant;
+
+class User extends Authenticatable
+{
+    use HasFactory, Notifiable, HasGrant;
+    
+    //...
+}
+```
+
+**Estas roles e permissions são registradas automaticamente pelo pacote.**
+
+```php
+// Role admin
+Role::create([
+    'name' => 'admin',
+    'description' => 'Administrador'
+]);
+
+// Permissão master
+Permission::create([
+    'name' => 'permissoes.gerenciar',
+    'description' => 'Permissões / Gerenciar',
+]);
+
+// Permissão de impersonate
+Permission::create([
+    'name' => 'impersonate',
+    'description' => 'Impersonate',
+]);
+```
+
+**EXEMPLO: `authorize()`**
+
+```php
+public function mount(): void 
+{
+    // Lança uma exceção 403 se o usuário não tiver a permissão
+    auth()->user()->authorize("comprovante-rendimentos.visualizar");
+}
+```
+
+**EXEMPLO: `can()`**
+
+```php
+// Se tem a permissão, mostra o aviso
+@if(auth()->user()->can('consignacao.portabilidade')) 
+    <div>Disponível para portabilidade</div>
+@endif
+```
+
+**EXEMPLO: `cannot()`**
+
+```html
+<!-- Se não tem a permissão, oculta o menu -->
+<x-menu-item title="Criar Página" link="/paginas/create" :hidden="auth()->user()->cannot('paginas.criar')" />
+```
+
+**EXEMPLO: crie outras roles e permissions na sua aplicação.**
+
+```php
+// database/seeders/PermissionsSeeder.php
+
+class PermissionsSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Permissão inicial criada pelo pacote
+        if (Permission::where('name', '<>', 'permissoes.gerenciar')->count()) {
+            return;
+        }
+        
+        // Processar comprovantes
+        Permission::create([
+            'name' => 'comprovante.processar',
+            'description' => 'Comprovantes de Rendimentos / Processar',
+        ]);
+
+        // Visualizar comprovantes
+        Permission::create([
+            'name' => 'comprovante.visualizar',
+            'description' => 'Comprovantes de Rendimentos / Visualizar',
+        ]);
+        
+        // FUNCIONÁRIO tem permissão apenas para visualizar
+        Role::create([
+            'name' => 'funcionario', 
+            'description' => 'Funcionário'
+         ])->givePermissionTo([
+            'comprovante.visualizar',
+        ]);
+        
+        // ADMIN tem todas as permissões
+        // A role `admin` já é criada automaticamente pelo pacote
+        Role::firstWhere('name', 'admin')->givePermissionTo(Permission::all());     
+        
+        // Defina os administradores iniciais do sistema
+        User::create([
+            'cpf' => '0123456789',
+            'matricula' => '123456',
+            'login' => 't123456',
+            'nome' => 'Maria Silva'
+        ])->assignRole('admin');
+        
+        // Note que é inviável atribuir previamente as roles para milhares de `funcionários`.        
+        // Confira o exmplo de roles/permissions dinâmicas abaixo.
+    }
+}
+```
+
+**EXEMPLO: lógica personalizada para definir dinamicamente roles/permissions.**
+
+```php
+// Esta clase é chamada automaticamente após o login do usuário.
+// app/Actions/AtualizarPermissionsLoginAction.php
+
+<?php
+
+namespace App\Actions;
+
+use App\Models\User;
+
+class AtualizarPermissionsLoginAction
+{
+    public function __construct(private User $user)
+    {
+    }
+
+    public function execute(): void
+    {
+        // Baseado nos dados do usuário, defina uma lógica para atribuição de roles.
+        // Exemplo: se é um `SERVIDOR`, atribua a role 'funcionario'.
+        
+        if ($this->user->rh_tipo === 'SERVIDOR') {
+            $this->user->assignRole('funcionario');
+        }
+    }
+}
+```
+
+**Adicione aos seeders padrão.**
+
+```php
+// database/seeders/DatabaseSeeder
+
+class DatabaseSeeder extends Seeder
+{   
+    public function run(): void
+    {
+        $this->call([
+            // ...
+            
+            PermissionsSeeder::class,
+        ]);
+    }
+}
+```
+
+**Rode as migrations.**
+
+```bash
+# Esta ação destruirá e recriará o banco!
+
+php artisan migrate:fresh --seed
+```
+
+**Utilize as seguintes rotas para o respectivo propósito.**
+
+|                  ROTA | DESCRIÇÃO                                                               |
+|----------------------:|-------------------------------------------------------------------------|
+|          /auth/perfil | Tela para desambiguação quando usuário possui múltiplos vínculos no RH. |
+|     /auth/permissions | Tela para gerenciamento de permissões.                                  |
+| /auth/logout/keycloak | Rota para logout da aplicação.                                          |
+
+

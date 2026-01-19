@@ -4,6 +4,7 @@ namespace TJDFT\Laravel\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
@@ -58,11 +59,11 @@ class KeycloakController extends Controller
             // Dados retornados do Keycloak
             $keycloakUser = Socialite::driver('keycloak')->stateless()->user();
 
-            // Cpf do usuário no Keycloak
+            // CPF do usuário no Keycloak
             $cpf = $keycloakUser['cpf'] ?? $keycloakUser['cpf'][0] ?? null;
 
             if (! $cpf) {
-                throw new LogicException('Usuário sem CPF cadastrado no Keycloak.');
+                throw new LogicException('Usuário não possui CPF cadastrado no Keycloak.');
             }
 
             // Obtém dados do RH
@@ -92,7 +93,7 @@ class KeycloakController extends Controller
             $users = User::where('cpf', $cpf)->get();
 
             if (! $users->count()) {
-                throw new LogicException('Usuário não registrado com CPF: ' . $cpf);
+                throw new AuthorizationException("O CPF ({$cpf}) não está cadastrado ou não possui acesso nesta aplicação.");
             }
 
             // Autentica usuário na aplicação
@@ -111,7 +112,7 @@ class KeycloakController extends Controller
                 return redirect('/auth/perfil');
             }
         } catch (Throwable $th) {
-            throw new LogicException('Erro ao fazer login. ' . $th->getMessage());
+            throw new AuthorizationException('Erro ao fazer login: ' . $th->getMessage());
         }
 
         // Redireciona de volta para página que estava tentando acessar. Se não especificado, por padrão vai para `/`

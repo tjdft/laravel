@@ -2,8 +2,6 @@
 
 Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
-## Recursos
-
 **Autenticação e Autorização:**
 
 - Fluxo de autenticação com **Keycloak**.
@@ -24,6 +22,8 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 - Arquivos de **translation** em `pt_BR`.
 - Ativa extensões úteis do **PostgreSQL**.
 
+<br>
+
 ## Pré-requisitos
 
 ```
@@ -31,11 +31,15 @@ composer require robsontenorio/mary
 php artisan mary:install
 ```
 
+<br>
+
 ## Instalação
 
 ```bash
 composer require tjdft/laravel
 ```
+
+<br>
 
 ## Configuração
 
@@ -102,6 +106,8 @@ Schema::create('users', function (Blueprint $table) {
 php artisan migrate:fresh --seed
 ```
 
+<br>
+
 ## API RH
 
 **Este pacote possui a classe base para consultas na API RH.**
@@ -159,6 +165,8 @@ $ferias = new FeriasPolvoService()->semCache()->porMatricula("12345");
 TJDFT_POLVO_CACHE_TTL='0'
 ```
 
+<br>
+
 ## Pesquisa
 
 **Adicione o trait `HasSearchAny` nos models.**
@@ -191,6 +199,8 @@ Espelho::query()->searchAny(['dados->nome', 'dados->endereco'], $valor)->get();
 DB::statement("CREATE INDEX idx_meu_indice ON minha_tabela USING gin (immutable_unaccent(minha_coluna->>'meu_campo') gin_trgm_ops)");
 ```
 
+<br>
+
 ## Número
 
 ```php
@@ -207,6 +217,8 @@ Numero::cpf('12345678901')          # 123.456.789-01
 Numero::cnpj('12345678000195')      # 12.345.678-0001/95
 ```
 
+<br>
+
 ## Data
 
 ```php
@@ -216,6 +228,8 @@ Data::formatada("2025-04-12")     # 12/04/2025
 Data::formatada(null, "-")        # Se for nula mostra "-"
 Data::formatada($carbon, "-")     # Funciona também com objetos Carbon.
 ```
+
+<br>
 
 ## Paginação
 
@@ -231,6 +245,8 @@ new class extends Component {
 }
 ```
 
+<br>
+
 ## Exceptions
 
 Utilize a classe `AppException` na lógica de negócio para automaicamente exibir um **toast** do **maryUI**.
@@ -238,6 +254,8 @@ Utilize a classe `AppException` na lógica de negócio para automaicamente exibi
 ```php
 throw new AppException("Você não pode fazer isso.");
 ```
+
+<br>
 
 ## Autenticação
 
@@ -252,6 +270,8 @@ Route::middleware('auth')->group(function () {
     // ...
 });
 ```
+
+<br>
 
 ## Impersonate
 
@@ -275,6 +295,8 @@ Somente usuários com a permissão `impersonate` poderão acessar esta tela.
     </div>
 </body>
 ```
+
+<br>
 
 ## Autorização
 

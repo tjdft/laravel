@@ -2,8 +2,6 @@
 
 Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
-<hr>
-
 ## Recursos
 
 **Autenticação e Autorização:**
@@ -35,17 +33,11 @@ composer require robsontenorio/mary
 php artisan mary:install
 ```
 
-<br>
-<hr>
-
 ## Instalação
 
 ```bash
 composer require tjdft/laravel
 ```
-
-<br>
-<hr>
 
 ## Configuração
 
@@ -112,9 +104,6 @@ Schema::create('users', function (Blueprint $table) {
 php artisan migrate:fresh --seed
 ```
 
-<br>
-<hr>
-
 ## API RH
 
 **Este pacote possui a classe base para consultas na API RH.**
@@ -172,9 +161,6 @@ $ferias = new FeriasPolvoService()->semCache()->porMatricula("12345");
 TJDFT_POLVO_CACHE_TTL='0'
 ```
 
-<br>
-<hr>
-
 ## Pesquisa
 
 **Adicione o trait `HasSearchAny` nos models.**
@@ -207,9 +193,6 @@ Espelho::query()->searchAny(['dados->nome', 'dados->endereco'], $valor)->get();
 DB::statement("CREATE INDEX idx_meu_indice ON minha_tabela USING gin (immutable_unaccent(minha_coluna->>'meu_campo') gin_trgm_ops)");
 ```
 
-<br>
-<hr>
-
 ## Número
 
 ```php
@@ -226,9 +209,6 @@ Numero::cpf('12345678901')          # 123.456.789-01
 Numero::cnpj('12345678000195')      # 12.345.678-0001/95
 ```
 
-<br>
-<hr>
-
 ## Data
 
 ```php
@@ -238,9 +218,6 @@ Data::formatada("2025-04-12")     # 12/04/2025
 Data::formatada(null, "-")        # Se for nula mostra "-"
 Data::formatada($carbon, "-")     # Funciona também com objetos Carbon.
 ```
-
-<br>
-<hr>
 
 ## Paginação
 
@@ -256,9 +233,6 @@ new class extends Component {
 }
 ```
 
-<br>
-<hr>
-
 ## Exceptions
 
 Utilize a classe `AppException` na lógica de negócio para automaicamente exibir um **toast** do **maryUI**.
@@ -266,9 +240,6 @@ Utilize a classe `AppException` na lógica de negócio para automaicamente exibi
 ```php
 throw new AppException("Você não pode fazer isso.");
 ```
-
-<br>
-<hr>
 
 ## Autenticação
 
@@ -283,9 +254,6 @@ Route::middleware('auth')->group(function () {
     // ...
 });
 ```
-
-<br>
-<hr>
 
 ## Impersonate
 
@@ -309,9 +277,6 @@ Somente usuários com a permissão `impersonate` poderão acessar esta tela.
     </div>
 </body>
 ```
-
-<br>
-<hr>
 
 ## Autorização
 

@@ -7,21 +7,22 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use TJDFT\Laravel\Exceptions\PolvoException;
+use TJDFT\Laravel\Traits\PolvoCache;
+use TJDFT\Laravel\Traits\PolvoPaginador;
 
 /**
  * Serviço de consulta a API RH GraphQL.
  */
 class PolvoService
 {
+    use PolvoCache, PolvoPaginador;
+
     /** Query executada **/
     protected static string $query;
 
-    /** Configurações do serviço */
-    protected array $config;
-
     public function __construct()
     {
-        $this->config = config('tjdft.polvo');
+        $this->ttl = config('tjdft.polvo.cache_ttl');
     }
 
     /**
@@ -39,9 +40,16 @@ class PolvoService
      */
     public function graphql(string $query): array
     {
+        static::$query = $query;
+
+        // Retorna resposta em cache, se ainda estiver ativa
+        if ($this->cache()->isAtivo()) {
+            return $this->cache()->get();
+        }
+
         $response = Http::withToken($this->getToken())
             ->retry(3, 2000)
-            ->post($this->config['api_url'], ['query' => $query])
+            ->post(config('tjdft.polvo.api_url'), ['query' => $query])
             ->throw(function (Response $response, RequestException $error) {
                 throw new PolvoException('Erro consultar no PolvoService: ' . $response->status() . ' - ' . $error->getMessage());
             })
@@ -50,6 +58,9 @@ class PolvoService
         if (isset($response['errors'])) {
             throw new PolvoException('Erro consultar no PolvoService: ' . $response['errors'][0]['message'] ?? 'erro desconhecido');
         }
+
+        // Coloca resposta da query em cache
+        $this->cache()->put($response);
 
         return $response;
     }
@@ -83,10 +94,10 @@ class PolvoService
     {
         return Http::asForm()
             ->retry(3, 2000)
-            ->post($this->config['auth_url'], [
+            ->post(config('tjdft.polvo.auth_url'), [
                 'grant_type' => 'client_credentials',
-                'client_id' => $this->config['client_id'],
-                'client_secret' => $this->config['client_secret'],
+                'client_id' => config('tjdft.polvo.client_id'),
+                'client_secret' => config('tjdft.polvo.client_secret'),
             ])->throw(function (Response $response, RequestException $error) {
                 throw new PolvoException('Erro obter token Keycloak: ' . $response->status() . ' - ' . $error->getMessage());
             })

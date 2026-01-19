@@ -4,7 +4,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Validate;
-use Livewire\Volt\Component;
+use Livewire\Component;
 use Mary\Traits\Toast;
 use TJDFT\Laravel\Models\Permission;
 
@@ -49,16 +49,7 @@ new class extends Component {
     {
         return Permission::query()
             ->whereIn('name', $this->selection)
-            ->when($this->search_selected_permission, function (Builder $query) {
-                $value = str($this->search_selected_permission)->replace(' ', '%');
-
-                if ($value->isNotEmpty()) {
-                    $query->where(function (Builder $query) use ($value) {
-                        $query->whereRaw("immutable_unaccent(name::text) ILIKE immutable_unaccent(?::text)", ["%{$value}%"]);
-                        $query->orWhereRaw("immutable_unaccent(description::text) ILIKE immutable_unaccent(?::text)", ["%{$value}%"]);
-                    });
-                }
-            })
+            ->when($this->search_selected_permission, fn(Builder $query) => $query->searchAny(['name', 'description'], $this->search_selected_permission))
             ->orderBy('name')
             ->get();
     }
@@ -67,14 +58,7 @@ new class extends Component {
     public function all_permissions(): Collection
     {
         return Permission::query()
-            ->when($this->search_all_permission, function (Builder $query) {
-                $value = str($this->search_all_permission)->replace(' ', '%');
-
-                if ($value->isNotEmpty()) {
-                    $query->orWhereRaw("immutable_unaccent(name::text) ILIKE immutable_unaccent(?::text)", ["%{$value}%"]);
-                    $query->orWhereRaw("immutable_unaccent(description::text) ILIKE immutable_unaccent(?::text)", ["%{$value}%"]);
-                }
-            })
+            ->when($this->search_all_permission, fn(Builder $query) => $query->searchAny(['name', 'description'], $this->search_all_permission))
             ->orderBy('name')
             ->get();
     }
@@ -156,7 +140,7 @@ new class extends Component {
         </x-slot:subtitle>
         <x-slot:actions>
             <x-button label="Copiar perfil" wire:click="$toggle('showModal')" icon="lucide.clipboard-copy" tooltip-bottom="Copiar permissões de outro usuário" />
-            <div class="divider divider-horizontal"></div>
+            <div class="divider divider-horizontal mx-0"></div>
             <x-button label="Salvar" wire:click="salvar" class="btn-primary justify-self-start" icon="lucide.check" spinner />
         </x-slot:actions>
     </x-header>
@@ -164,7 +148,7 @@ new class extends Component {
     <div class="grid gap-8">
         {{-- USUÁRIO  --}}
         <x-card shadow>
-            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/imagens/empty-user.jpg" no-separator no-hover class="-my-3" />
+            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/imagens/user.png" no-separator no-hover class="-my-3" />
         </x-card>
 
         <div class="grid grid-cols-2 gap-8">

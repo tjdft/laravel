@@ -2,6 +2,7 @@
 
 namespace TJDFT\Laravel\Traits;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -11,7 +12,8 @@ use Illuminate\Database\Eloquent\Builder;
  */
 trait HasSearchAny
 {
-    public function scopeSearchAny(Builder $query, array $columns, string $value): Builder
+    #[Scope]
+    public function searchAny(Builder $query, array $columns, string $value): Builder
     {
         return $query->where(function (Builder $query) use ($columns, $value) {
             $schema = config('tjdft.pgsql_extensions.schema');

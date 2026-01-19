@@ -3,7 +3,7 @@
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Livewire\Volt\Component;
+use Livewire\Component;
 use TJDFT\Laravel\Traits\WithPaginationAndReset;
 
 new class extends Component {
@@ -73,9 +73,10 @@ new class extends Component {
             link="/auth/permissions/{id}"
             show-empty-text
             empty-text="Nenhum resultado encontrado."
-            class="arrows">
+            class="arrows"
+        >
             @scope('cell_nome', $user)
-            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/imagens/empty-user.jpg" no-separator no-hover class="-mx-4 -my-3">
+            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/imagens/user.png" no-separator no-hover class="!-mx-5 !py-0">
                 <x-slot:actions class="text-xs opacity-50">
                     {{ $user->roles()->pluck('description')->join(', ') ?: '-' }}
                 </x-slot:actions>

@@ -2,7 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Support\Collection;
-use Livewire\Volt\Component;
+use Livewire\Component;
 
 new class extends Component {
     public function mount(): void
@@ -59,20 +59,25 @@ new class extends Component {
             <div class="mt-3">
                 Você pode alternar o perfil clicando em
                 <x-icon name="lucide.settings" class="w-4 h-4" />
-                no menu principal
+                no painel principal
             </div>
         </div>
 
-        <div>
+        <div class="truncate min-h-screen">
             @foreach($users as $user)
-                <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/imagens/empty-user.jpg">
+                <x-list-item :item="$user" value="nome" avatar="foto" fallback-avatar="/imagens/user.png">
+                    <x-slot:subValue>
+                        {{ $user['matricula'] }} / {{ $user['rh_tipo'] }} / {{ $user['rh_status'] }}
+                    </x-slot:subValue>
                     <x-slot:actions>
                         <x-button
                             label="Iniciar sessão"
                             wire:click="iniciar('{{ $user->matricula}}')"
                             icon-right="lucide.arrow-right"
                             class="btn-primary btn-sm"
-                            spinner="iniciar('{{ $user->matricula}}')" />
+                            spinner="iniciar('{{ $user->matricula}}')"
+                            responsive
+                        />
                     </x-slot:actions>
                 </x-list-item>
             @endforeach

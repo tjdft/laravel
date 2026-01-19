@@ -2,7 +2,6 @@
 
 // Auth
 use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
 use TJDFT\Laravel\Http\Controllers\KeycloakController;
 
 Route::middleware('web')->group(function () {
@@ -14,11 +13,14 @@ Route::middleware('web')->group(function () {
 
 Route::middleware(['web', 'auth'])->group(function () {
     // Seleção de perfil
-    Volt::route('/auth/perfil', 'perfil');
+    Route::livewire('/auth/perfil', 'tjdft::perfil');
 
     // Permissions
-    Volt::route('/auth/permissions', 'permissions.index');
-    Volt::route('/auth/permissions/{user}', 'permissions.show');
+    Route::livewire('/auth/permissions', 'tjdft::permissions.index');
+    Route::livewire('/auth/permissions/{user}', 'tjdft::permissions.show');
+
+    // Impersonate
+    Route::livewire('/auth/impersonate', 'tjdft::impersonate');
 });
 
 

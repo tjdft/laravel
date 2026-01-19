@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use TJDFT\Laravel\Models\Permission;
+use TJDFT\Laravel\Models\Role;
 
 return new class extends Migration {
     public function up(): void
@@ -27,10 +29,28 @@ return new class extends Migration {
         Schema::create($tables['grants'], function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->json('roles');
-            $table->json('permissions');
+            $table->json('roles')->nullable();
+            $table->json('permissions')->nullable();
             $table->timestamps();
         });
+
+        // Role admin
+        Role::create([
+            'name' => 'admin',
+            'description' => 'Administrador'
+        ]);
+
+        // Permissão master
+        Permission::create([
+            'name' => 'permissoes.gerenciar',
+            'description' => 'Permissões / Gerenciar',
+        ]);
+
+        // Permissão de impersonate
+        Permission::create([
+            'name' => 'impersonate',
+            'description' => 'Impersonate',
+        ]);
     }
 
     public function down(): void

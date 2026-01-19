@@ -1,6 +1,6 @@
 {
     "name": "tjdft/laravel",
-    "description": "Conjunto de utilitários para desenvolvimento de aplicações Laravel no TJDFT.",
+    "description": "Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.",
     "type": "library",
     "license": "MIT",
     "authors": [

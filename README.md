@@ -585,7 +585,7 @@ Modifique o  `composer.json` da sua aplicação.
 
 <!-- @formatter:off -->
 ```json
-"minimum-stability": "dev", // <- mude pa "dev"  
+"minimum-stability": "dev", // <- mude para "dev"  
 
 // Adicione este trecho
 "repositories": {

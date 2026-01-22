@@ -29,9 +29,12 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
 **Funcionalidades adicionais:**
 
+- Integração com o **Sentry**
 - Trait `HasSearchAny` para busca simplificada em **múltiplos campos**.
 - Trait `WithPaginationAndReset` para paginação simplificada com **Livewire**.
 - Utilitários `Numero` e `Data` para diversas **formatações** em tela.
+- Pacote extra de **ícones**.
+- Tela de **erro** padronizada.
 - Classes de **exception** padronizadas.
 - Arquivos de **translation** em `pt_BR`.
 - Ativa extensões úteis do **PostgreSQL**.
@@ -49,13 +52,11 @@ php artisan mary:install
 
 ## Instalação
 
+**Adicione o pacote.**
+
 ```bash
 composer require tjdft/laravel
 ```
-
-<br>
-
-## Configuração
 
 **Altere o timezone em `config/app.php`**
 
@@ -69,21 +70,41 @@ composer require tjdft/laravel
 APP_LOCALE=pt_BR
 ```
 
+**Adicione as configurações de middleware e exceptions em `bootstrap/app.php`.**
+
+```php
+use TJDFT\Laravel\ExceptionHandler;
+
+...
+
+->withMiddleware(function (Middleware $middleware) {
+    // Openshift proxy
+    $middleware->trustProxies(at: '*');
+})
+->withExceptions(function (Exceptions $exceptions) {
+    // Tratamento personalizado de exceções
+    ExceptionHandler::register($exceptions);
+})
+```
+
 **Crie as novas variáveis de ambiente em `.env`.**
 
 ```bash
+# Sentry
+TJDFT_SENTRY_LARAVEL_DSN=
+
 # API RH
 TJDFT_POLVO_API_URL=https://<URL_API_RH>/graphql
 TJDFT_POLVO_AUTH_URL=https://<URL_KEYCLOAK>/auth/realms/<NOME_REALM>/protocol/openid-connect/token
-TJDFT_POLVO_CLIENT_ID=...
-TJDFT_POLVO_CLIENT_SECRET=...
+TJDFT_POLVO_CLIENT_ID=<NOME_CLIENT>
+TJDFT_POLVO_CLIENT_SECRET=<SEGREDO>
 TJDFT_POLVO_CACHE_TTL='1 hour'
 
 # Keycloak
 TJDFT_KEYCLOAK_BASE_URL=https://<URL_KEYCLOAK>/auth
 TJDFT_KEYCLOAK_REALMS=<NOME_REALM>
-TJDFT_KEYCLOAK_CLIENT_ID=...
-TJDFT_KEYCLOAK_CLIENT_SECRET=...
+TJDFT_KEYCLOAK_CLIENT_ID=<NOME_CLIENT>
+TJDFT_KEYCLOAK_CLIENT_SECRET=<SEGREDO>
 
 # Schema onde devem ser ativadas as extensões do PostgreSQL
 # Use apenas se o schema principal da aplicação for diferente de `public`.
@@ -118,6 +139,80 @@ Schema::create('users', function (Blueprint $table) {
 # Esta ação destruirá e recriará o banco!
 
 php artisan migrate:fresh --seed
+```
+
+**Pronto!**
+
+<br>
+
+## Autenticação
+
+**Este pacote implementa o fluxo de autenticação via **Keycloak** para as rotas protegidas do sistema.**
+
+```php
+// Rotas protegidas 
+Route::middleware('auth')->group(function () {   
+    
+    Route::livewire('/paginas/create', 'pages::paginas.criar');
+    
+    // ...
+});
+```
+
+**Para o **logout** de usuários utilize a rota `/auth/logout/keycloak`.**
+
+
+<!-- @formatter:off -->
+```html
+<x-button icon="lucide.power" title="Sair" link="/auth/logout/keycloak" no-wire-navigate />
+```
+<!-- @formatter:on -->
+
+**Usuários com mais de um vínculo no RH serão redirecionados automaticamente para a rota `/auth/perfil`.**
+
+```
+Ex: Se o usuário possui vínculo de Pensão Alimentícia e Servidor, então ele deve selecionar um perfil para acesso.
+```
+
+**Consulte também o tópico [Autorização](#autorização) para mais detalhes sobre **permissões**.**
+
+```php
+pubfic function mount(): void 
+{    
+    // Lança uma exceção 403 se o usuário não tiver a permissão
+    auth()->user()->authorize("comprovante.visualizar");   
+}
+```
+
+```html
+<!-- Se não tem a permissão, oculta o menu -->
+<x-menu-item title="Criar Página" link="/paginas/create" :hidden="auth()->user()->cannot('paginas.criar')" />
+```
+
+<br>
+
+## Impersonate
+
+Utilize a rota `/auth/impersonate` para a funcionalidade de personificação de usuários.  
+Somente usuários com a permissão `impersonate` poderão acessar esta tela.
+
+**Adicione no arquivo de layout o aviso de personificação, quando em uso.**
+
+```html
+<!-- resources/views/layouts/app.blade.php -->
+
+<body>
+    <!-- Aviso de Impersonate -->
+    <livewire:tjdft::impersonating />
+
+    <div>
+        Menu superior ...
+    </div>
+
+    <div>
+        Conteúdo da página ...
+    </div>
+</body>
 ```
 
 <br>
@@ -263,51 +358,37 @@ new class extends Component {
 
 ## Exceptions
 
-Utilize a classe `AppException` na lógica de negócio para automaicamente exibir um **toast** do **maryUI**.
+Utilize a classe `AppException` na lógica de negócio para automaticamente exibir um **toast** do **maryUI**.
 
 ```php
-throw new AppException("Você não pode fazer isso.");
+use TJDFT\Laravel\Exceptions\AppException;
+
+...
+
+if ($consignacao->status_id === Status::FINALIZADA) {
+    throw new AppException("Este contrato não pode ser alterado.");
+}
 ```
 
 <br>
 
-## Autenticação
+## Ícones
 
-Este pacote implementa o fluxo de autenticação via **Keycloak** para as rotas protegidas do sistema.
+Este pacote inclui um conjunto extra de ícones para utilização nos componentes do **maryUI**.
 
-```php
-// Rotas protegidas 
-Route::middleware('auth')->group(function () {   
-    
-    Route::livewire('/paginas/create', 'pages::paginas.create');
-    
-    // ...
-});
-```
-
-<br>
-
-## Impersonate
-
-Utilize a rota `/auth/impersonate` para a funcionalidade de personificação de usuários.  
-Somente usuários com a permissão `impersonate` poderão acessar esta tela.
-
-**Adicione no arquivo de layout o aviso de personificação, quando em uso.**
+- https://lucide.dev/icons **(recomendado)**
+- https://heroicons.com
+- https://materialdesignicons.com
 
 ```html
-<!-- EXEMPLO -->
-<body>
-    <!-- Aviso de Impersonate -->
-    <livewire:tjdft::impersonating />
+<!-- Hero icons possuem prefixo "o-" -->
+<x-button label="Salvar" icon="o-check" />
 
-    <div>
-        Menu superior ...
-    </div>
+<!-- Lucide icons possuem prefixo "lucide." -->
+<x-button label="Consulta" icon="lucide.users" />
 
-    <div>
-        Conteúdo da página ...
-    </div>
-</body>
+<!-- MDI icons possuem prefixo "mdi." -->
+<x-button label="Contato" icon="mdi.whatsapp" />
 ```
 
 <br>
@@ -330,12 +411,6 @@ class User extends Authenticatable
 **Estas roles e permissions são registradas automaticamente pelo pacote.**
 
 ```php
-// Role admin
-Role::create([
-    'name' => 'admin',
-    'description' => 'Administrador'
-]);
-
 // Permissão master
 Permission::create([
     'name' => 'permissoes.gerenciar',
@@ -347,6 +422,12 @@ Permission::create([
     'name' => 'impersonate',
     'description' => 'Impersonate',
 ]);
+
+// Role admin
+Role::create([
+    'name' => 'admin',
+    'description' => 'Administrador'
+])->givePermissionTo(['permissoes.gerenciar', 'impersonate']);
 ```
 
 **EXEMPLO: `authorize()`**
@@ -483,12 +564,40 @@ class DatabaseSeeder extends Seeder
 php artisan migrate:fresh --seed
 ```
 
-**Utilize as seguintes rotas para o respectivo propósito.**
+<br>
 
-|                  ROTA | DESCRIÇÃO                                                               |
-|----------------------:|-------------------------------------------------------------------------|
-|          /auth/perfil | Tela para desambiguação quando usuário possui múltiplos vínculos no RH. |
-|     /auth/permissions | Tela para gerenciamento de permissões.                                  |
-| /auth/logout/keycloak | Rota para logout da aplicação.                                          |
+## Desenvolvimento local
+
+Crie a pasta `packages` na raiz da sua aplicação e clone o repositório.
+
+```shell
+mkdir packages
+cd packages
+git clone git@github.com:tjdft/laravel.git
+```
+
+Modifique o  `composer.json` da sua aplicação.
 
 
+<!-- @formatter:off -->
+```json
+"minimum-stability": "dev", // <- mude pa "dev"  
+
+// Adicione este trecho
+"repositories": {
+  "tjdft/laravel": {
+    "type": "path",
+    "url": "/var/www/html/packages/laravel",
+    "options": {
+        "symlink": true
+      }
+  }
+}
+```
+<!-- @formatter:on -->
+
+Instale o pacote novamente para realizar o `symlink` local.
+
+```shell
+composer require tjdft/laravel
+```

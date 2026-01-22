@@ -53,19 +53,19 @@ new class extends Component {
 
 <div>
     <div class="grid gap-8 max-w-[600px] mx-auto mt-20">
-        <div class="text-center  opacity-50 border-b border-b-base-content/40 border-dashed  pb-5 text-sm">
+        <div class="text-center opacity-50 border-b border-b-base-content/40 border-dashed  pb-5 text-sm">
             <x-icon name="lucide.users" class="w-12 h-12" />
-            <div class="font-bold mt-2">Perfil de Acesso</div>
+            <div class="font-bold mt-2">Selecione um perfil de acesso</div>
             <div class="mt-3">
-                Você pode alternar o perfil clicando em
+                Você encontra esta página novamente clicando no ícone
                 <x-icon name="lucide.settings" class="w-4 h-4" />
-                no painel principal
+                do painel principal
             </div>
         </div>
 
         <div class="truncate min-h-screen">
             @foreach($users as $user)
-                <x-list-item :item="$user" value="nome" avatar="foto" fallback-avatar="/imagens/user.png">
+                <x-list-item :item="$user" value="nome" avatar="foto" fallback-avatar="/user.png">
                     <x-slot:subValue>
                         {{ $user['matricula'] }} / {{ $user['rh_tipo'] }} / {{ $user['rh_status'] }}
                     </x-slot:subValue>

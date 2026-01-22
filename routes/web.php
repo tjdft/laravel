@@ -1,14 +1,19 @@
 <?php
 
-// Auth
 use Illuminate\Support\Facades\Route;
 use TJDFT\Laravel\Http\Controllers\KeycloakController;
 
 Route::middleware('web')->group(function () {
+    // Auth
     Route::get('/login', [KeycloakController::class, 'login'])->name('login');
     Route::get('/auth/redirect/keycloak', [KeycloakController::class, 'redirect']);
     Route::get('/auth/callback/keycloak', [KeycloakController::class, 'callback']);
     Route::get('/auth/logout/keycloak', [KeycloakController::class, 'logout']);
+
+    // Imagem padrão do usuário
+    Route::get('/user.png', function () {
+        return response()->file(__DIR__ . '/../public/user.png')->setCache(['max_age' => 86400, 'public' => true]);
+    });
 });
 
 Route::middleware(['web', 'auth'])->group(function () {

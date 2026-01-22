@@ -148,7 +148,7 @@ new class extends Component {
     <div class="grid gap-8">
         {{-- USUÁRIO  --}}
         <x-card shadow>
-            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/imagens/user.png" no-separator no-hover class="-my-3" />
+            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/user.png" no-separator no-hover class="-my-3" />
         </x-card>
 
         <div class="grid grid-cols-2 gap-8">

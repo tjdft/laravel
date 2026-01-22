@@ -13,24 +13,34 @@ use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class LaravelServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
+        // Rotas
         $this->loadroutesFrom(__DIR__ . '/../routes/web.php');
+
+        // Configuração
         $this->mergeConfigFrom(__DIR__ . '/../config/tjdft.php', 'tjdft');
+
+        // Views blade
+        $this->loadViewsFrom(__DIR__ . '/../resources/views/blade', 'tjdft');
+
+        // Traduções pt-BR
         $this->loadTranslationsFrom(__DIR__ . '/../lang');
         $this->loadJsonTranslationsFrom(__DIR__ . '/../lang');
 
+        // Encaminha as configurações do Keycloak para o pacote `socialiteproviders/keycloak`
+        config()->set('services.keycloak', config('tjdft.keycloak'));
+
+        // Encaminha as configurações do Sentry para o pacote `sentry/sentry-laravel`
+        config()->set('sentry.dsn', config('tjdft.sentry.dsn'));
+
+        // Migrations
         if ($this->app->runningInConsole()) {
             $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         }
-
-        // Passa as configurações de Keycloak deste pacote para o pacote `socialiteproviders/keycloak`
-        if (! config('services.keycloak')) {
-            config()->set('services.keycloak', config('tjdft.keycloak'));
-        }
     }
 
-    public function register()
+    public function register(): void
     {
         // Carrega os componentes do Livewire
         Livewire::addNamespace('tjdft', __DIR__ . '/../resources/views/pages');

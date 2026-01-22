@@ -34,12 +34,6 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        // Role admin
-        Role::create([
-            'name' => 'admin',
-            'description' => 'Administrador'
-        ]);
-
         // Permissão master
         Permission::create([
             'name' => 'permissoes.gerenciar',
@@ -51,6 +45,12 @@ return new class extends Migration {
             'name' => 'impersonate',
             'description' => 'Impersonate',
         ]);
+
+        // Role admin
+        Role::create([
+            'name' => 'admin',
+            'description' => 'Administrador'
+        ])->givePermissionTo(['permissoes.gerenciar', 'impersonate']);
     }
 
     public function down(): void

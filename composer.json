@@ -21,6 +21,9 @@
         }
     },
     "require": {
-        "socialiteproviders/keycloak": "^5.3"
+        "socialiteproviders/keycloak": "^5.3",
+        "technikermathe/blade-lucide-icons": "^3.136",
+        "postare/blade-mdi": "^1.1",
+        "sentry/sentry-laravel": "^4.20"
     }
 }

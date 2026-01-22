@@ -41,4 +41,9 @@ return [
         'base_url' => env('TJDFT_KEYCLOAK_BASE_URL'),
         'realms' => env('TJDFT_KEYCLOAK_REALMS')
     ],
+
+    // SENTRY
+    'sentry' => [
+        'dsn' => env('TJDFT_SENTRY_LARAVEL_DSN'),
+    ]
 ];

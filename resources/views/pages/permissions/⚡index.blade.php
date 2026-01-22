@@ -31,7 +31,7 @@ new class extends Component {
     public function headers(): array
     {
         return [
-            ['key' => 'nome', 'label' => 'Pessoa', 'class' => 'w-96'],
+            ['key' => 'nome', 'label' => 'Pessoa'],
         ];
     }
 
@@ -73,10 +73,10 @@ new class extends Component {
             link="/auth/permissions/{id}"
             show-empty-text
             empty-text="Nenhum resultado encontrado."
-            class="arrows"
+            class="arrow-symbol"
         >
             @scope('cell_nome', $user)
-            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/imagens/user.png" no-separator no-hover class="!-mx-5 !py-0">
+            <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/user.png" no-separator no-hover class="!-mx-5 !py-0">
                 <x-slot:actions class="text-xs opacity-50">
                     {{ $user->roles()->pluck('description')->join(', ') ?: '-' }}
                 </x-slot:actions>
@@ -85,3 +85,20 @@ new class extends Component {
         </x-table>
     </x-card>
 </div>
+
+<style>
+    .arrow-symbol td:last-child {
+        position: relative;
+        padding-right: 1.5rem;
+    }
+
+    .arrow-symbol td:last-child::after {
+        content: '›';
+        color: rgb(209 213 219);
+        font-size: 1.5rem;
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>

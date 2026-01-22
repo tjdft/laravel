@@ -194,7 +194,7 @@ pubfic function mount(): void
 ## Impersonate
 
 Utilize a rota `/auth/impersonate` para a funcionalidade de personificação de usuários.  
-Somente usuários com a permissão `impersonate` poderão acessar esta tela.
+Somente usuários com a permissão `impersonate` podem acessar esta funcionalidade.  
 
 **Adicione no arquivo de layout o aviso de personificação, quando em uso.**
 
@@ -394,6 +394,10 @@ Este pacote inclui um conjunto extra de ícones para utilização nos componente
 <br>
 
 ## Autorização
+
+Utilize a rota `/auth/permissions` para acessar o gerenciamento de permissões.  
+Somente usuários com a permissão `permissions.gerenciar` podem acessar esta funcionalidade.
+
 
 **Adicione o trait `HasGrant` no model `User`.**
 

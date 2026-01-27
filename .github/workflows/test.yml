@@ -38,9 +38,7 @@ jobs:
 
       - name: Install
         run: |
-          cp .env.example .env
           composer install --prefer-dist --no-interaction --no-progress --ansi
-          php artisan key:generate
 
       - name: Test
-        run: php artisan test --ansi --compact
+        run: ./vendor/bin/pest

@@ -222,6 +222,45 @@ test('Seleciona um vínculo de RH para iniciar sessão', function () {
     expect(auth()->user()->id)->toBe($vinculo2->id);
 });
 
+test('Usuário sem CPF no Keycloak não é autenticado', function () {
+    // Desliga o tratamento de exceções
+    $this->withoutExceptionHandling();
+
+    // Dado que eu não estava logado
+    $this->logout();
+
+    // Dado que o Keycloak retornou um usuário sem CPF
+    $this->keycloakUser->attributes['cpf'] = null;
+
+    // Quando eu tentar fazer o callback
+    // Então deve ser lançada uma exceção de autorização
+    $this->get('/auth/callback/keycloak');
+})->throws(AuthorizationException::class, 'Usuário não possui CPF cadastrado no Keycloak.');
+
 test('Invoca a action de Permissions adicionais da aplicação local', function () {
-    //
-})->todo();
+    // Dado que eu não estava logado
+    $this->logout();
+
+    // Mock da action de permissões
+    $this->mock(config('tjdft.permissions_action'), function (MockInterface $mock) {
+        $mock->shouldReceive('execute')->once();
+    });
+
+    // Quando eu fizer login no keycloack
+    // Então a action de permissões deve ser invocada
+    // E devo ser redirecionado para a página inicial do sistema
+    $this->get('/auth/callback/keycloak')->assertRedirect('/');
+});
+
+test('Não falha se a action de Permissions adicionais não existir', function () {
+    // Dado que eu não estava logado
+    $this->logout();
+
+    // Dado que a action de permissões está configurada para uma classe inexistente
+    config()->set('tjdft.permissions_action', 'App\Actions\ClasseInexistente');
+
+    // Quando eu fizer login no keycloack
+    // Então não deve lançar exceção
+    // E devo ser redirecionado para a página inicial do sistema
+    $this->get('/auth/callback/keycloak')->assertRedirect('/');
+});

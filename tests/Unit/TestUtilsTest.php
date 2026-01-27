@@ -32,4 +32,3 @@ test('Cria usuário com permissões', function () {
     expect($user->can('edit articles'))->toBeTrue();
     expect($user->can('delete articles'))->toBeTrue();
 });
-

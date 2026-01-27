@@ -316,7 +316,8 @@ DB::statement("CREATE INDEX idx_meu_indice ON minha_tabela USING gin (immutable_
 ```php
 use TJDFT\Laravel\Support\Numero; 
 
-Numero::porcentagem('0.2567')       # 25,67 %
+Numero::percentual('0.2567')       # 25,67%
+Numero::percentual('0.2567', 1)       # 25,6%
 
 Numero::formatado('1234.56')        # 1.234,56
 Numero::moeda('1234.56')            # R$ 3.201,45

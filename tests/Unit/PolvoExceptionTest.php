@@ -15,15 +15,6 @@ test('Resposta vazia', function () {
     //
 })->throws(PolvoException::class, 'PolvoService: Erro de conectividade, resposta vazia.');
 
-test('Erro fatal', function () {
-    Http::fake([
-        '/graphql' => Http::failedRequest(['code' => 'not_found'], 404)
-    ]);
-
-    new PessoasPolvoService()->porCpf(123);
-    //
-})->skip()->todo()->throws(PolvoException::class, 'xxx');
-
 test('Erro graphQL conhecido', function () {
     Http::fake([
         '/graphql' => [

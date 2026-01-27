@@ -13,6 +13,7 @@ use SocialiteProviders\Manager\ServiceProvider as SocialiteKeycloakServiceProvid
 use Technikermathe\LucideIcons\BladeLucideIconsServiceProvider;
 use TJDFT\Laravel\TJDFTLaravelServiceProvider;
 use TJDFT\Laravel\Traits\TestUtis;
+use Workbench\App\Actions\AtualizarPermissionsLoginAction;
 use function Orchestra\Testbench\workbench_path;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
@@ -54,6 +55,9 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         config()->set('tjdft.keycloak.client_id', 'exemplo');
         config()->set('tjdft.keycloak.client_secret', 'exemplo');
         config()->set('tjdft.keycloak.redirect', '/abc/test');
+
+        // Permssions action
+        config()->set('tjdft.permissions_action', AtualizarPermissionsLoginAction::class);
 
         // Namespace de views para `layouts` do Livewire
         $app['view']->addNamespace('layouts', workbench_path('resources/views/layouts'));

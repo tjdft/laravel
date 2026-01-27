@@ -41,7 +41,7 @@ jobs:
           composer install --prefer-dist --no-interaction --no-progress --ansi
 
       - name: Test
-        run: ./vendor/bin/pest --colors --compact --coverage-clover=coverage.xml
+        run: composer test:coverage
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

@@ -16,6 +16,8 @@ trait HasImpersonate
 
     public function impersonate(Authenticatable|string $target): void
     {
+        auth()->user()->authorize('impersonate');
+
         // Verifica se o usuário já está personificando alguém
         if (auth()->user()->impersonating()) {
             throw new Exception('Você já está personificando alguém.');
@@ -32,6 +34,7 @@ trait HasImpersonate
         session()->put('impersonator_user_id', auth()->user()->id);
 
         session()->regenerate();
+
         auth()->login($user);
     }
 
@@ -47,7 +50,7 @@ trait HasImpersonate
     private function porLogin(string $login): Authenticatable
     {
         // Busca a pessoa pelo login informado
-        $pessoa = new PessoasPolvoService()->porLogin($login)[0] ?? null;
+        $pessoa = new PessoasPolvoService()->porLogin($login)->first() ?? null;
 
         // Verifica se a pessoa foi encontrada
         if (! $pessoa) {

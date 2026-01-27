@@ -3,7 +3,6 @@
 namespace TJDFT\Laravel\Traits;
 
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Controle de cache do Polvo
@@ -42,17 +41,17 @@ trait PolvoCache
     }
 
     /**
-     * Determina se uma chave possui cache ativo.
+     * Determina se o cache ainda é valido.
      */
-    public function isAtivo()
+    public function isValido(): bool
     {
-        return Cache::has($this->getKey()) && $this->permiteCache();
+        return cache()->has($this->getKey()) && $this->isExpirado();
     }
 
     /**
-     * Determina se permite por query em cache.
+     * Determina se o tempo de cache expirou
      */
-    public function permiteCache(): bool
+    public function isExpirado(): bool
     {
         return $this->getTtl()->isFuture();
     }
@@ -60,15 +59,15 @@ trait PolvoCache
     /**
      * Recupera resposta da query do cache.
      */
-    public function get()
+    public function get(): mixed
     {
-        return Cache::get($this->getKey());
+        return cache()->get($this->getKey());
     }
 
     /**
      * Desabita o cache para a query a ser executada.
      */
-    public function semCache()
+    public function semCache(): self
     {
         $this->ttl = 0;
 
@@ -81,7 +80,7 @@ trait PolvoCache
      * @param  string  $ttl  Ex: '1 hour', '10 minutes' ...
      * @param  string  $key  chave de cache personalizada
      */
-    public function lembrar(string $ttl, ?string $key = null)
+    public function lembrar(string $ttl, ?string $key = null): self
     {
         $this->ttl = $ttl;
         $this->key = $key;
@@ -92,12 +91,12 @@ trait PolvoCache
     /**
      * Adiciona resposta query no cache.
      */
-    protected function put($response): void
+    protected function put(mixed $response): void
     {
-        if (! $this->permiteCache()) {
+        if (! $this->isExpirado()) {
             return;
         }
 
-        Cache::put($this->getKey(), $response, $this->getTtl());
+        cache()->put($this->getKey(), $response, $this->getTtl());
     }
 }

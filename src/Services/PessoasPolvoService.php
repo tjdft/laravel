@@ -40,7 +40,7 @@ class PessoasPolvoService extends PolvoService
         return collect($response['data']['pessoas']['data'] ?? []);
     }
 
-    public function porLogin(string $login)
+    public function porLogin(string $login): Collection
     {
         // Sanitiza
         $login = addslashes($login);
@@ -75,6 +75,6 @@ class PessoasPolvoService extends PolvoService
 
         $response = $this->graphql($query);
 
-        return $response['data']['pessoas']['data'] ?? [];
+        return collect($response['data']['pessoas']['data'] ?? []);
     }
 }

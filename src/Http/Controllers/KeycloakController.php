@@ -2,29 +2,20 @@
 
 namespace TJDFT\Laravel\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use LogicException;
 use Throwable;
 use TJDFT\Laravel\Services\PessoasPolvoService;
 
-class KeycloakController extends Controller
+class KeycloakController
 {
-    private PessoasPolvoService $pessoasPolvoService;
-
-    public function __construct()
-    {
-        $this->pessoasPolvoService = new PessoasPolvoService;
-    }
-
     public function login(Request $request)
     {
         // Se estiver logado redireciona para o dashboard
-        if (Auth::user()) {
+        if (auth()->user()) {
             return redirect('/');
         }
 
@@ -51,7 +42,7 @@ class KeycloakController extends Controller
     public function callback()
     {
         // Se estiver logado redireciona para o dashboard
-        if (Auth::user()) {
+        if (auth()->user()) {
             return redirect('/');
         }
 
@@ -60,18 +51,21 @@ class KeycloakController extends Controller
             $keycloakUser = Socialite::driver('keycloak')->stateless()->user();
 
             // CPF do usuário no Keycloak
-            $cpf = $keycloakUser['cpf'] ?? $keycloakUser['cpf'][0] ?? null;
+            $cpf = $keycloakUser->attributes['cpf'] ?? $keycloakUser->user['cpf'] ?? $keycloakUser->user['cpf'][0] ?? null;
 
             if (! $cpf) {
                 throw new LogicException('Usuário não possui CPF cadastrado no Keycloak.');
             }
 
-            // Obtém dados do RH
-            $pessoas = $this->pessoasPolvoService->porCpf($cpf);
+            // Obtém dados do POLVO APU RH
+            $pessoas = new PessoasPolvoService()->porCpf($cpf);
+
+            /** @var Model $model */
+            $model = config('auth.providers.users.model');
 
             // Registra localmente
-            $pessoas->each(function ($pessoa) use ($keycloakUser, $cpf) {
-                User::updateOrCreate(
+            $pessoas->each(function ($pessoa) use ($keycloakUser, $cpf, $model) {
+                $model::updateOrCreate(
                     [
                         'cpf' => $cpf,
                         'matricula' => $pessoa['matricula']
@@ -83,26 +77,25 @@ class KeycloakController extends Controller
                         'nome' => $pessoa['nomeFinal'] ?? $keycloakUser->getName(),
                         'email' => $keycloakUser->getEmail(),
                         'localizacao' => $pessoa['localizacao'] ?? null,
-                        'rh_tipo' => $pessoa['tipo'],
-                        'rh_status' => $pessoa['status'],
+                        'rh_tipo' => $pessoa['tipo'] ?? null,
+                        'rh_status' => $pessoa['status'] ?? null,
                     ]
                 );
             });
 
             // Verifica localmente o cadastro
-            $users = User::where('cpf', $cpf)->get();
+            $users = $model::where('cpf', $cpf)->get();
 
             if (! $users->count()) {
                 throw new AuthorizationException("O CPF ({$cpf}) não está cadastrado ou não possui acesso nesta aplicação.");
             }
 
             // Autentica usuário na aplicação
-            Auth::login($users->first());
+            auth()->login($users->first());
 
             // Invoca action para ajuste de permissões
             try {
-                $action = app()->make(config('tjdft.permissions_action'));
-                new $action($users->first())->execute();
+                app()->make(config('tjdft.permissions_action'))->execute();
             } catch (Throwable $e) {
                 // Sumprime erro caso a classe não exista
             }
@@ -115,21 +108,22 @@ class KeycloakController extends Controller
             throw new AuthorizationException('Erro ao fazer login: ' . $th->getMessage());
         }
 
-        // Redireciona de volta para página que estava tentando acessar. Se não especificado, por padrão vai para `/`
+        // Redireciona de volta para página que estava tentando acessar.
+        // Se não especificado, por padrão vai para `/`
         return redirect()->intended('/');
     }
 
     public function logout(Request $request)
     {
         // Gera URL de logout do Keycloak
-        // Os ambientes estão com versões diferentes do keycloak.
+        // Os ambientes estão com versões diferentes do Keycloak.
         // O processo de logout é diferente.
-        $url_logout = app()->environment('production')
+        $url_logout = app()->isProduction()
             ? Socialite::driver('keycloak')->getLogoutUrl(config('app.url'))
             : Socialite::driver('keycloak')->getLogoutUrl(config('app.url'), config('tjdft.keycloak.client_id'));
 
         // Desloga na aplicação
-        Auth::logout();
+        auth()->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

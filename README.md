@@ -37,16 +37,8 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 - Tela de **erro** padronizada.
 - Classes de **exception** padronizadas.
 - Arquivos de **translation** em `pt_BR`.
+- Utilitários para **testes automatizados**.
 - Ativa extensões úteis do **PostgreSQL**.
-
-<br>
-
-## Pré-requisitos
-
-```
-composer require robsontenorio/mary
-php artisan mary:install
-```
 
 <br>
 
@@ -56,6 +48,12 @@ php artisan mary:install
 
 ```bash
 composer require tjdft/laravel
+```
+
+**Instale maryUI incluído no pacote.**
+
+```
+php artisan mary:install
 ```
 
 **Altere o timezone em `config/app.php`**
@@ -116,9 +114,9 @@ TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
 ```php
 Schema::create('users', function (Blueprint $table) {
     $table->id();
-    $table->uuid()->unique()->index()->nullable();
-    $table->string('login')->unique()->index();
-    $table->string('matricula')->unique()->nullable();
+    $table->uuid()->index()->nullable();
+    $table->string('login')->index();
+    $table->string('matricula')->nullable();
     $table->string('cpf')->index()->nullable();
     $table->string('nome');
     $table->string('email')->nullable();
@@ -194,7 +192,7 @@ pubfic function mount(): void
 ## Impersonate
 
 Utilize a rota `/auth/impersonate` para a funcionalidade de personificação de usuários.  
-Somente usuários com a permissão `impersonate` podem acessar esta funcionalidade.  
+Somente usuários com a permissão `impersonate` podem acessar esta funcionalidade.
 
 **Adicione no arquivo de layout o aviso de personificação, quando em uso.**
 
@@ -398,7 +396,6 @@ Este pacote inclui um conjunto extra de ícones para utilização nos componente
 Utilize a rota `/auth/permissions` para acessar o gerenciamento de permissões.  
 Somente usuários com a permissão `permissions.gerenciar` podem acessar esta funcionalidade.
 
-
 **Adicione o trait `HasGrant` no model `User`.**
 
 ```php
@@ -570,38 +567,175 @@ php artisan migrate:fresh --seed
 
 <br>
 
-## Desenvolvimento local
+## Testes
 
-Crie a pasta `packages` na raiz da sua aplicação e clone o repositório.
+**Ajuste o aruivo `tests/Pest.php`.**
 
-```shell
-mkdir packages
-cd packages
-git clone git@github.com:tjdft/laravel.git
+```php
+use TJDFT\Laravel\Tests\TestCase;
+
+pest()->extend(TestCase::class)->in('Feature', 'Unit');
 ```
 
-Modifique o  `composer.json` da sua aplicação.
+**Ajuste o arquivo `tests/TestCase.php`.**
+
+```php
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use TJDFT\Laravel\Tests\Traits\TestUtis;
+
+abstract class TestCase extends BaseTestCase
+{
+    // Helpers de autenticação + `setUp()` padrão 
+    use TestUtis;    
+}
+```
+
+**EXEMPLO: `login()`**
+
+```php
+// Cria e autentica um usuário aleatoriamente
+$this->login();
+
+// Cria e autentica um usuário com permissão específica
+$this->login(permission: 'comprovante.visualizar');
+
+// Cria e autentica um usuário com múltiplas permissões
+$this->login(permission: ['comprovante.visualizar', 'comprovante.gerenciar']);
+
+// Autentica um usuário existente
+$user = User::factory()->create();
+$this->login($user);
+```
+
+**EXEMPLO: `login()`**
+
+```php
+test('Usuários autenticados podem ver páginas secretas', function () {        
+
+     // Dado que eu estou logado
+     // Então eu consigo ver a página
+     $this->get('/pagina-secreta')->assertOk();
+
+    // Não é necessário usar `$this->login()`
+    // Pois o `TestCase` já faz isso automaticamente antes de cada teste.
+});
+```
+
+**EXEMPLO: `login()`**
+
+```php
+test('Teste permissão', function () {
+
+    // Dado que eu tenho permissão básica
+    $this->login(permission: 'paginas.visualizar');
+    
+    // Quando eu tentar editar a página, então verei um erro de acesso negado
+    $this->get('/paginas/99/edit')->assertForbiden();
+    
+    // Dado que eu tenho permissão de gestão
+    $this->login(permission: 'paginas.gerenciar');
+    
+    // Quando eu tentar editar a página, então eu consigo ver a página
+    $this->get('/paginas/99/edit')->assertOk();
+});
+```
+
+**EXEMPLO: `logout()`**
+
+```php
+test('Visitantes não podem ver páginas secretas.', function () {         
+
+    // Dado que eu não estava logado
+    $this->logout();
+
+    // Quando eu tentar acessar uma rota protegida
+    // Então sou redirecionado para a página de login
+    $this->get('/pagina-secreta')->assertRedirect('/login');
+});
+```
+
+**EXEMPLO: `assertPolvoQueryContains()`**
+
+```php
+test('Consulta movimentações', function () {
+
+    // Quando eu definir o período e consultar
+    Livewire::test('pages::movimentacoes')
+        ->set('data_inicio', '2020-07-20')
+        ->set('data_fim', '2020-07-22')
+        ->call('consultar');
+
+    // Então a query GraphQL que foi executada pelo PolvoService deve conter o período correto
+    $this->assertPolvoQueryContains('
+            movimentacoes(
+                periodo: {dataInicio: "2020-07-20" dataFim: "2020-07-22"}                
+    ');
+});
+````
+
+**EXEMPLO: `assertPolvoQueryNotContains()`**
+
+```php
+// Dado que eu estou visualizando a unidade `12345`
+$this->get('/unidades/12345');
+
+// Então query GraphQL que foi executada pelo PolvoService NÃO contém um trecho esperado
+$this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
+````
+
+**EXEMPLO: `boot()`**
+
+```php
+abstract class TestCase extends \Orchestra\Testbench\TestCase
+{
+    use WithWorkbench, TestUtis;
+    
+    protected function boot(): void
+    {
+        // Adicione aqui qualquer coisa que precise ser executada antes dos testes.
+    }
+}
+```
+
+<br>
+
+## Desenvolvimento local
+
+**Clone este repositório.**
+
+```shell
+git clone git@github.com:tjdft/laravel.git packages/laravel
+```
+
+**Adicione o repositório com  `composer.json` da aplicação.**
 
 
 <!-- @formatter:off -->
-```json
-"minimum-stability": "dev", // <- mude para "dev"  
-
-// Adicione este trecho
-"repositories": {
-  "tjdft/laravel": {
-    "type": "path",
-    "url": "/var/www/html/packages/laravel",
-    "options": {
-        "symlink": true
-      }
-  }
-}
+```shell
+composer config repositories.local '{"type": "path", "url": "/var/ww
+w/html/packages/laravel"}'  
 ```
 <!-- @formatter:on -->
 
-Instale o pacote novamente para realizar o `symlink` local.
+**Instale a versão local do pacote.**
 
 ```shell
-composer require tjdft/laravel
+composer require tjdft/laravel:@dev
+```
+
+**Pronto!**
+
+---
+
+**Testes automatizados do pacote**
+
+```shell
+# Entre na pasta do pacote
+cd /var/www/html/packages/laravel
+
+# Instale as dependências
+composer install
+
+# Rode os testes
+./vendor/bin/pest
 ```

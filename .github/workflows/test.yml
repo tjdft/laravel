@@ -1,0 +1,48 @@
+name: Testes
+
+on:
+  push:
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    container:
+      image: robsontenorio/laravel:sideup
+      options: --user root
+
+    services:
+      postgres-teste:
+        image: postgres:17
+        env:
+          POSTGRES_DB: folha-db
+          POSTGRES_USER: folha
+          POSTGRES_PASSWORD: folha
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Git safe
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Composer cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install
+        run: |
+          cp .env.example .env
+          composer install --prefer-dist --no-interaction --no-progress --ansi
+          php artisan key:generate
+
+      - name: Test
+        run: php artisan test --ansi --compact

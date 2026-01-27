@@ -15,9 +15,9 @@ class Role extends Model
         return config('tjdft.acl.tables.roles');
     }
 
-    public function givePermissionTo(Collection|array $permissions): void
+    public function givePermissionTo(Collection|array|string $permissions): void
     {
-        $permissions = is_array($permissions) ? collect($permissions) : collect($permissions)->pluck('name');
+        $permissions = is_array($permissions) || is_string($permissions) ? collect($permissions) : collect($permissions)->pluck('name');
 
         $permissions->merge($this->permissions);
 

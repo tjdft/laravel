@@ -11,7 +11,7 @@ use Livewire\Livewire;
 use SocialiteProviders\Keycloak\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
-class LaravelServiceProvider extends ServiceProvider
+class TJDFTLaravelServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
@@ -34,6 +34,14 @@ class LaravelServiceProvider extends ServiceProvider
         // Encaminha as configurações do Sentry para o pacote `sentry/sentry-laravel`
         config()->set('sentry.dsn', config('tjdft.sentry.dsn'));
 
+        // Carrega os componentes do Livewire
+        Livewire::addNamespace('tjdft', __DIR__ . '/../resources/views/pages');
+
+        // Socialite - Keycloak
+        Event::listen(function (SocialiteWasCalled $event) {
+            $event->extendSocialite('keycloak', Provider::class);
+        });
+
         // Migrations
         if ($this->app->runningInConsole()) {
             $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
@@ -42,9 +50,6 @@ class LaravelServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        // Carrega os componentes do Livewire
-        Livewire::addNamespace('tjdft', __DIR__ . '/../resources/views/pages');
-
         // Proíbe comandos destrutivos em produção
         DB::prohibitDestructiveCommands($this->app->isProduction());
 
@@ -55,11 +60,6 @@ class LaravelServiceProvider extends ServiceProvider
         // now() + json_encode()
         Date::serializeUsing(function ($date) {
             return $date->format('Y-m-d H:i:s');
-        });
-
-        // Socialite - Keycloak
-        Event::listen(function (SocialiteWasCalled $event) {
-            $event->extendSocialite('keycloak', Provider::class);
         });
     }
 }

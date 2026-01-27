@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Component;
 use TJDFT\Laravel\Traits\WithPaginationAndReset;
@@ -20,7 +21,10 @@ new class extends Component {
     // Lista de usuários
     public function users(): LengthAwarePaginator
     {
-        return User::query()
+        /** @var Model $model */
+        $model = config('auth.providers.users.model');
+
+        return $model::query()
             ->with('grant')
             ->when(is_numeric($this->search), fn(Builder $query) => $query->where('matricula', $this->search))
             ->when(! is_numeric($this->search), fn(Builder $query) => $query->searchAny(['nome'], $this->search))

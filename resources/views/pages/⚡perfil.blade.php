@@ -1,18 +1,24 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
 new class extends Component {
-    public function mount(): void
+    /** @var Model $model */
+    private $model;
+
+    public function boot(): void
     {
+        $this->model = config('auth.providers.users.model');
     }
 
     // Lista de usuários
     public function users(): Collection
     {
-        return User::query()
+        // Somente aqueles com o mesmo CPF do usuário autenticado
+        return $this->model::query()
             ->where('cpf', auth()->user()->cpf)
             ->get();
     }
@@ -24,18 +30,17 @@ new class extends Component {
 
         // Logout
         auth()->logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
+        session()->invalidate();
+        session()->regenerateToken();
 
         // Login para matricula selecionada
-        $user = User::where('cpf', $cpf)->where('matricula', $matricula)->firstOrFail();
+        $user = $this->model::where('cpf', $cpf)->where('matricula', $matricula)->firstOrFail();
 
         auth()->login($user);
 
         // Invoca action para ajuste de permissões
         try {
-            $action = app()->make(config('tjdft.permissions_action'));
-            new $action($user)->execute();
+            app()->make(config('tjdft.permissions_action'))->execute();
         } catch (Throwable $e) {
             // Sumprime erro caso a classe não exista
         }
@@ -54,11 +59,11 @@ new class extends Component {
 <div>
     <div class="grid gap-8 max-w-[600px] mx-auto mt-20">
         <div class="text-center opacity-50 border-b border-b-base-content/40 border-dashed  pb-5 text-sm">
-            <x-icon name="lucide.users" class="w-12 h-12" />
+            <x-mary-icon name="lucide.users" class="w-12 h-12" />
             <div class="font-bold mt-2">Selecione um perfil de acesso</div>
             <div class="mt-3">
                 Você encontra esta página novamente clicando no ícone
-                <x-icon name="lucide.settings" class="w-4 h-4" />
+                <x-mary-icon name="lucide.settings" class="w-4 h-4" />
                 do painel principal
             </div>
         </div>

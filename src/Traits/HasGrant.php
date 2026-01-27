@@ -36,18 +36,32 @@ trait HasGrant
         $grant->save();
     }
 
-    public function revokePermissionTo(string $permission): void
+    public function unassignRole(string $role): void
     {
-        $this->grant()->update([
-            $grant->permissions?->filter(fn($perm) => $perm !== $permission) ?? collect()
-        ]);
+        $role = Role::where('name', $role)->firstOrFail();
+
+        $grant = $this->grant()->firstOrNew();
+
+        $grant->roles = $grant->roles?->filter(fn($r) => $r !== $role->name) ?? collect();
+        $grant->permissions = $grant->permissions?->filter(fn($perm) => ! $role->permissions->contains($perm)) ?? collect();
+        $grant->save();
     }
 
-    public function givePermissionTo(string $permission): void
+    public function givePermissionTo(Collection|array|string $permissions): void
     {
         $grant = $this->grant()->firstOrNew();
 
-        $grant->permissions = $grant->permissions?->add($permission)->unique() ?? collect([$permission]);
+        $permissions = is_array($permissions) || is_string($permissions) ? collect($permissions) : collect($permissions)->pluck('name');
+
+        $grant->permissions = $grant->permissions?->add($permissions)->filter()->unique() ?? $permissions;
+        $grant->save();
+    }
+
+    public function revokePermissionTo(string $permission): void
+    {
+        $grant = $this->grant()->firstOrNew();
+
+        $grant->permissions = $grant->permissions?->filter(fn($perm) => $perm !== $permission) ?? collect();
         $grant->save();
     }
 
@@ -56,6 +70,18 @@ trait HasGrant
         $permissions = is_array($permissions) ? collect($permissions) : collect($permissions)->pluck('name');
 
         $grant = $this->grant()->firstOrNew();
+        $grant->permissions = $permissions;
+        $grant->save();
+    }
+
+    public function syncRoles(array $roles): void
+    {
+        $rolesCollection = collect($roles);
+
+        $permissions = Role::whereIn('name', $rolesCollection)->get()->flatMap->permissions->unique();
+
+        $grant = $this->grant()->firstOrNew();
+        $grant->roles = $rolesCollection;
         $grant->permissions = $permissions;
         $grant->save();
     }
@@ -89,9 +115,21 @@ trait HasGrant
         return $this->grant?->roles?->intersect($roles)->isNotEmpty() ?? false;
     }
 
+    // Possui a permission específica
+    public function hasPermission(string $permission): bool
+    {
+        return $this->grant?->permissions?->contains($permission) ?? false;
+    }
+
+    // Possui qualquer uma das permissions informadas
+    public function hasAnyPermission(array $permissions): bool
+    {
+        return $this->grant?->permissions?->intersect($permissions)->isNotEmpty() ?? false;
+    }
+
     // Verifica se o usuário é administrador
     public function isAdmin(): bool
     {
-        return $this->hasRole('admin');
+        return $this->hasRole('admin') || $this->hasPermission('permissions.gerenciar');
     }
 }

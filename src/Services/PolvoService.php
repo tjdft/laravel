@@ -18,7 +18,7 @@ class PolvoService
     use PolvoCache, PolvoPaginador;
 
     /** Query executada **/
-    protected static string $query;
+    protected static string $query = '';
 
     public function __construct()
     {
@@ -40,23 +40,30 @@ class PolvoService
      */
     public function graphql(string $query): array
     {
-        static::$query = $query;
+        // Acumula queries executadas durante a requisição para fins de inspeção
+        // TODO: isso pode ser um problema nos testes do mesmo arquivo, deveria ser isolado por caso de uso.
+        static::$query .= $query;
 
         // Retorna resposta em cache, se ainda estiver ativa
-        if ($this->cache()->isAtivo()) {
+        if ($this->cache()->isValido()) {
             return $this->cache()->get();
         }
 
-        $response = Http::withToken($this->getToken())
-            ->retry(3, 2000)
+        $response = Http::retry(3, 2000)
+            ->withToken($this->getToken())
+            ->withOptions(['allow_redirects' => false])
             ->post(config('tjdft.polvo.api_url'), ['query' => $query])
             ->throw(function (Response $response, RequestException $error) {
-                throw new PolvoException('Erro consultar no PolvoService: ' . $response->status() . ' - ' . $error->getMessage());
+                throw new PolvoException('PolvoService: ' . $response->status() . ' - ' . $error->getMessage());
             })
             ->json();
 
+        if (! $response) {
+            throw new PolvoException('PolvoService: Erro de conectividade, resposta vazia.');
+        }
+
         if (isset($response['errors'])) {
-            throw new PolvoException('Erro consultar no PolvoService: ' . $response['errors'][0]['message'] ?? 'erro desconhecido');
+            throw new PolvoException('PolvoService: ' . $response['errors'][0]['message'] ?? 'erro desconhecido.');
         }
 
         // Coloca resposta da query em cache
@@ -102,5 +109,10 @@ class PolvoService
                 throw new PolvoException('Erro obter token Keycloak: ' . $response->status() . ' - ' . $error->getMessage());
             })
             ->json();
+    }
+
+    public function getQuery(): string
+    {
+        return static::$query;
     }
 }

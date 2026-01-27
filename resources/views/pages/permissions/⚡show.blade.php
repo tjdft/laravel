@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -11,8 +11,17 @@ use TJDFT\Laravel\Models\Permission;
 new class extends Component {
     use Toast;
 
-    // Usuário em edição
-    public User $user;
+    /**
+     * Usuário em edição
+     * @var Model $user
+     */
+    public $user;
+
+    /**
+     * Model `User`
+     * @var Model $model
+     */
+    public $model;
 
     // Busca por nome da permissão (TODAS)
     public string $search_all_permission = '';
@@ -36,8 +45,11 @@ new class extends Component {
     // Resultado da busca de usuários para copiar perfil
     public Collection $users;
 
-    public function mount(): void
+    public function mount($user): void
     {
+        $this->model = config('auth.providers.users.model');
+        $this->user = $this->model::findOrFail($user);
+
         auth()->user()->authorize("permissoes.gerenciar");
 
         $this->selection = $this->user->permissions()->pluck('name')->all();
@@ -66,9 +78,9 @@ new class extends Component {
     // Busca usuários para copiar perfil
     public function search(string $value = ''): void
     {
-        $selecionado = User::where('id', $this->user_id)->get();
+        $selecionado = $this->model::where('id', $this->user_id)->get();
 
-        $this->users = User::query()
+        $this->users = $this->model::query()
             ->searchAny(['nome', 'matricula'], $value)
             ->take(10)
             ->orderBy('nome')
@@ -81,7 +93,7 @@ new class extends Component {
     {
         $this->validate();
 
-        $this->selection = User::find($this->user_id)->permissions()->pluck('name')->all();
+        $this->selection = $this->model::find($this->user_id)->permissions()->pluck('name')->all();
 
         $this->salvar();
 

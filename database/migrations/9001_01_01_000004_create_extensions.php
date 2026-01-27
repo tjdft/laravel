@@ -8,6 +8,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        // Verifica se o banco é PGSQL
+        if (config('database.default') !== 'pgsql') {
+            return;
+        }
+
         $schema = config('tjdft.pgsql_extensions.schema');
         $schema_name = $schema ? "SCHEMA $schema" : '';
         $schema_dot = $schema ? "$schema." : '';

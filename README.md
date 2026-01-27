@@ -7,6 +7,9 @@
     <a href="https://packagist.org/packages/tjdft/laravel">
         <img src="https://img.shields.io/packagist/v/tjdft/laravel?label=stable&color=blue&cacheSeconds=60">
     </a>
+    <a href="https://codecov.io/gh/tjdft/laravel" > 
+        <img src="https://codecov.io/gh/tjdft/laravel/graph/badge.svg?token=XQ797WDEPA"/> 
+    </a>
     <a href="https://packagist.org/packages/tjdft/laravel">
         <img src="https://poser.pugx.org/tjdft/laravel/license.svg">
     </a>

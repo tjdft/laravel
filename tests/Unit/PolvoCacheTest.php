@@ -19,6 +19,19 @@ test('Desabilita o cache da query graphQL', function () {
     expect($service->cache()->get())->toBeNull();
 });
 
+test('Usa o cache da query graphQL previamente executada', function () {
+    // Dado que existe uma query graphQL
+    $service1 = new PessoasPolvoService();
+    $service1->porCpf('345');
+
+    // Dado que existe outra instância do serviço
+    $service2 = new PessoasPolvoService();
+    $service2->porCpf('345');
+
+    // Então nada é colocado em cache
+    expect($service2->cache()->isValido())->toBeTrue();
+});
+
 test('Cache personalizado da query graphQL', function () {
     // Dado que existe uma query graphQL
     $service = new PessoasPolvoService();
@@ -27,8 +40,8 @@ test('Cache personalizado da query graphQL', function () {
     $service->lembrar('10 seconds', 'servidor-345')->porCpf('345');
 
     // Então o TTL e KEY devem ser respeitados
-    expect($service->getKey())->toBe('servidor-345');
-    expect($service->getTtl())->equalTo(now()->parse('10 seconds'));
+    expect($service->getKey())->toBe('servidor-345')
+        ->and($service->getTtl())->equalTo(now()->parse('10 seconds'));
 });
 
 test('Expiração de cache da query graphQL', function () {
@@ -38,17 +51,17 @@ test('Expiração de cache da query graphQL', function () {
     // Quando for executada com cache
     $service->porCpf('345');
 
-    $isValido = $service->isValido();
-    $isExpirado = $service->isExpirado();
+    $vaiSerInvalido = $service->isValido();
+    $vaiEstarExpirado = $service->isExpirado();
 
     // Dado que avançei no tempo em duas horas
     now()->setTestNow(now()->addHours(2));
 
     // Então o cache está expirado
-    expect($isExpirado)->toBeTrue();
+    expect($vaiEstarExpirado)->toBeTrue();
 
     // Então não possui cache válido
-    expect($isValido)->toBeTrue();
+    expect($vaiSerInvalido)->toBeTrue();
 
     // Então a chave não existe mais em cache
     expect($service->cache()->get())->toBeNull();

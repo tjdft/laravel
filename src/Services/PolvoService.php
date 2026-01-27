@@ -33,6 +33,9 @@ class PolvoService
     {
         // Define um token. Evita ida ao Keycloack durante os testes
         Cache::put('polvo_token', 'fake_token_123');
+
+        // Reseta queries acumuladas entre cada caso de teste
+        self::$query = '';
     }
 
     /**
@@ -40,8 +43,7 @@ class PolvoService
      */
     public function graphql(string $query): array
     {
-        // Acumula queries executadas durante a requisição para fins de inspeção
-        // TODO: isso pode ser um problema nos testes do mesmo arquivo, deveria ser isolado por caso de uso.
+        // Acumula queries executadas durante o mesmo ciclo de requisição para fins de inspeção
         static::$query .= $query;
 
         // Retorna resposta em cache, se ainda estiver ativa
@@ -63,7 +65,7 @@ class PolvoService
         }
 
         if (isset($response['errors'])) {
-            throw new PolvoException('PolvoService: ' . $response['errors'][0]['message'] ?? 'erro desconhecido.');
+            throw new PolvoException('PolvoService : Erro API : ' . ($response['errors'][0]['message'] ?? 'erro desconhecido.'));
         }
 
         // Coloca resposta da query em cache

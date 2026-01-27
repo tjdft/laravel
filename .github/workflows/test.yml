@@ -41,4 +41,4 @@ jobs:
           composer install --prefer-dist --no-interaction --no-progress --ansi
 
       - name: Test
-        run: ./vendor/bin/pest
+        run: ./vendor/bin/pest --compact --parallel

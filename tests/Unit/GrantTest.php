@@ -154,7 +154,7 @@ test('Nega autorização para usuário sem permission específica', function () 
 
     // Tenta autorizar o usuário sem a permission atribuída
     $user->authorize('manage.users');
-})->todo()->skip();
+})->throws(Exception::class);
 
 test('Testa via can()', function () {
     // Cria um usuário de teste

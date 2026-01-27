@@ -42,7 +42,7 @@
     },
     "scripts": {
         "test": [
-            "./vendor/bin/pest --compact --colors --parallel"
+            "php -d pcov.enabled=1 ./vendor/bin/pest --compact --colors --parallel"
         ],
         "test:coverage": [
             "php -d pcov.enabled=1 ./vendor/bin/pest --compact --coverage --log-junit=.coverage/report.xml --coverage-html=.coverage/html --coverage-clover=.coverage/clover.xml --coverage-cobertura=.coverage/cobertura.xml"

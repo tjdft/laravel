@@ -737,5 +737,8 @@ cd /var/www/html/packages/laravel
 composer install
 
 # Rode os testes
-./vendor/bin/pest
+composer test
+
+# Cobertura de código
+composer test:coverage
 ```

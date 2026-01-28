@@ -148,7 +148,7 @@ php artisan migrate:fresh --seed
 
 ## Autenticação
 
-**Este pacote implementa o fluxo de autenticação via **Keycloak** para as rotas protegidas do sistema.**
+**Este pacote implementa o fluxo de autenticação via `Keycloak` para as rotas protegidas do sistema.**
 
 ```php
 // Rotas protegidas 
@@ -175,7 +175,12 @@ Route::middleware('auth')->group(function () {
 Ex: Se o usuário possui vínculo de Pensão Alimentícia e Servidor, então ele deve selecionar um perfil para acesso.
 ```
 
-**Consulte também o tópico [Autorização](#autorização) para mais detalhes sobre **permissões**.**
+```html
+<!-- Opção em menu -->
+<x-menu-item icon="lucide.users" title="Alterar perfil" link="/auth/perfil" />
+```
+
+**Consulte o tópico [Autorização](#autorização) para mais detalhes sobre **permissões**.**
 
 ```php
 pubfic function mount(): void 
@@ -194,8 +199,13 @@ pubfic function mount(): void
 
 ## Impersonate
 
-Utilize a rota `/auth/impersonate` para a funcionalidade de personificação de usuários.  
-Somente usuários com a permissão `impersonate` podem acessar esta funcionalidade.
+**Utilize a rota `/auth/impersonate` para a funcionalidade de personificação de usuários.**
+
+<!-- @formatter:off -->
+```html
+<x-menu-item title="Personificar" icon="lucide.drama" link="/auth/impersonate" :hidden="auth()->user()->cannot('impersonate')" />
+```
+<!-- @formatter:on -->
 
 **Adicione no arquivo de layout o aviso de personificação, quando em uso.**
 
@@ -316,15 +326,18 @@ DB::statement("CREATE INDEX idx_meu_indice ON minha_tabela USING gin (immutable_
 ```php
 use TJDFT\Laravel\Support\Numero; 
 
-Numero::percentual('0.2567')       # 25,67%
-Numero::percentual('0.2567', 1)       # 25,6%
+Numero::percentual('0.2567')        # 25,67%
+Numero::percentual('0.2567', 1)     # 25,6%
 
-Numero::formatado('1234.56')        # 1.234,56
-Numero::moeda('1234.56')            # R$ 3.201,45
 Numero::truncado('14.6789')         # 14.67
 Numero::truncado('14.6789', 3)      # 14.678
 
+Numero::formatado('1234.56')        # 1.234,56
+
+Numero::moeda('1234.56')            # R$ 3.201,45
+
 Numero::cpf('12345678901')          # 123.456.789-01
+
 Numero::cnpj('12345678000195')      # 12.345.678-0001/95
 ```
 
@@ -344,7 +357,7 @@ Data::formatada($carbon, "-")     # Funciona também com objetos Carbon.
 
 ## Paginação
 
-Utilize o trait `WithPaginationAndReset` nas telas com tabelas para reset automático de paginação, quando as propriedades de filtro forem atualizadas.
+**Utilize o trait `WithPaginationAndReset` nas telas com tabelas para reset automático de paginação, quando as propriedades de filtro forem atualizadas.**
 
 ```php
 use TJDFT\Laravel\Traits\WithPaginationAndReset;
@@ -354,6 +367,13 @@ new class extends Component {
 
     // ...
 }
+```
+
+**Reset manual, se necessário.**
+
+```html
+<!-- Invoca manualmente o reset de paginação e propriedades de filtro -->
+<x-button label="Limpar" wire:click="clear()" />
 ```
 
 <br>
@@ -378,7 +398,7 @@ if ($consignacao->status_id === Status::FINALIZADA) {
 
 Este pacote inclui um conjunto extra de ícones para utilização nos componentes do **maryUI**.
 
-- https://lucide.dev/icons **(recomendado)**
+- https://lucide.dev/icons **(preferencial)**
 - https://heroicons.com
 - https://materialdesignicons.com
 
@@ -397,8 +417,13 @@ Este pacote inclui um conjunto extra de ícones para utilização nos componente
 
 ## Autorização
 
-Utilize a rota `/auth/permissions` para acessar o gerenciamento de permissões.  
-Somente usuários com a permissão `permissions.gerenciar` podem acessar esta funcionalidade.
+**Utilize a rota `/auth/permissions` para acessar o gerenciamento de permissões.**
+<!-- @formatter:off -->
+```html
+<x-menu-item title="Permissões" icon="lucide.shield-check" link="/auth/permissions" :hidden="auth()->user()->cannot('permissoes.gerenciar')" />
+```
+<!-- @formatter:on -->
+
 
 **Adicione o trait `HasGrant` no model `User`.**
 
@@ -573,23 +598,22 @@ php artisan migrate:fresh --seed
 
 ## Testes
 
-**Ajuste o aruivo `tests/Pest.php`.**
+**Ajuste  `tests/Pest.php`.**
 
 ```php
-use TJDFT\Laravel\Tests\TestCase;
 
-pest()->extend(TestCase::class)->in('Feature', 'Unit');
+pest()->extend(Tests\TestCase::class)->in('Feature', 'Unit');
 ```
 
-**Ajuste o arquivo `tests/TestCase.php`.**
+**Ajuste  `tests/TestCase.php`.**
 
 ```php
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use TJDFT\Laravel\Tests\Traits\TestUtis;
+use TJDFT\Laravel\Traits\TestUtis;
 
 abstract class TestCase extends BaseTestCase
 {
-    // Helpers de autenticação + `setUp()` padrão 
+    // Helpers para testes automatizados
     use TestUtis;    
 }
 ```
@@ -711,13 +735,12 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
 git clone git@github.com:tjdft/laravel.git packages/laravel
 ```
 
-**Adicione o repositório com  `composer.json` da aplicação.**
+**Adicione o repositório local no `composer.json` da aplicação.**
 
 
 <!-- @formatter:off -->
 ```shell
-composer config repositories.local '{"type": "path", "url": "/var/ww
-w/html/packages/laravel"}'  
+composer config repositories.local '{"type": "path", "url": "/var/www/html/packages/laravel"}'  
 ```
 <!-- @formatter:on -->
 

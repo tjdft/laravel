@@ -47,39 +47,38 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
 ## Instalação
 
-**Adicione o pacote.**
+Adicione o pacote.
 
 ```bash
 composer require tjdft/laravel
 ```
 
-**Instale maryUI incluído no pacote.**
+Instale maryUI incluído no pacote.
 
 ```
 php artisan mary:install
 ```
 
-**Altere o timezone em `config/app.php`**
+Altere o timezone em `config/app.php`
 
 ```php
 'timezone' => 'America/Sao_Paulo',
 ```
 
-**Altere o idioma em `.env`**
+Altere o idioma em `.env`
 
 ```bash
 APP_LOCALE=pt_BR
 ```
 
-**Adicione as configurações de middleware e exceptions em `bootstrap/app.php`.**
+Adicione as configurações de middleware e exceptions em `bootstrap/app.php`.
 
 ```php
 use TJDFT\Laravel\ExceptionHandler;
-
-...
+// ...
 
 ->withMiddleware(function (Middleware $middleware) {
-    // Openshift proxy
+    // Para funcionar no Openshift e outros ambientes com proxies reversos
     $middleware->trustProxies(at: '*');
 })
 ->withExceptions(function (Exceptions $exceptions) {
@@ -88,7 +87,7 @@ use TJDFT\Laravel\ExceptionHandler;
 })
 ```
 
-**Crie as novas variáveis de ambiente em `.env`.**
+Crie as novas variáveis de ambiente em `.env`.
 
 ```bash
 # Sentry
@@ -112,7 +111,7 @@ TJDFT_KEYCLOAK_CLIENT_SECRET=<SEGREDO>
 TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
 ```
 
-**Ajuste a migration existente `users`.**
+Ajuste a migration existente `users`.
 
 ```php
 Schema::create('users', function (Blueprint $table) {
@@ -134,7 +133,7 @@ Schema::create('users', function (Blueprint $table) {
 });
 ```
 
-**Rode as migrations.**
+Rode as migrations.
 
 ```bash
 # Esta ação destruirá e recriará o banco!
@@ -148,7 +147,7 @@ php artisan migrate:fresh --seed
 
 ## Autenticação
 
-**Este pacote implementa o fluxo de autenticação via `Keycloak` para as rotas protegidas do sistema.**
+Este pacote implementa o fluxo de autenticação via `Keycloak` para as rotas protegidas do sistema.
 
 ```php
 // Rotas protegidas 
@@ -160,16 +159,16 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-**Para o **logout** de usuários utilize a rota `/auth/logout/keycloak`.**
+Para o **logout** de usuários utilize a rota `/auth/logout/keycloak`.
 
 
 <!-- @formatter:off -->
 ```html
-<x-button icon="lucide.power" title="Sair" link="/auth/logout/keycloak" no-wire-navigate />
+<x-button title="Sair" link="/auth/logout/keycloak" no-wire-navigate />
 ```
 <!-- @formatter:on -->
 
-**Usuários com mais de um vínculo no RH serão redirecionados automaticamente para a rota `/auth/perfil`.**
+Usuários com **mais de um vínculo no RH** serão redirecionados automaticamente para a rota `/auth/perfil`.
 
 ```
 Ex: Se o usuário possui vínculo de Pensão Alimentícia e Servidor, então ele deve selecionar um perfil para acesso.
@@ -177,10 +176,11 @@ Ex: Se o usuário possui vínculo de Pensão Alimentícia e Servidor, então ele
 
 ```html
 <!-- Opção em menu -->
-<x-menu-item icon="lucide.users" title="Alterar perfil" link="/auth/perfil" />
+
+<x-menu-item title="Alterar perfil" link="/auth/perfil" />
 ```
 
-**Consulte o tópico [Autorização](#autorização) para mais detalhes sobre **permissões**.**
+Consulte o tópico **[Autorização](#autorização)** para mais detalhes sobre **permissões**.
 
 ```php
 pubfic function mount(): void 
@@ -192,6 +192,7 @@ pubfic function mount(): void
 
 ```html
 <!-- Se não tem a permissão, oculta o menu -->
+
 <x-menu-item title="Criar Página" link="/paginas/create" :hidden="auth()->user()->cannot('paginas.criar')" />
 ```
 
@@ -199,15 +200,30 @@ pubfic function mount(): void
 
 ## Impersonate
 
-**Utilize a rota `/auth/impersonate` para a funcionalidade de personificação de usuários.**
+Adicione o trait `HasImpersonate` no model `User`.
+
+```php
+use TJDFT\Laravel\Traits\HasImpersonate;
+// ...
+
+class User extends Authenticatable
+{
+    use HasImpersonate;
+    
+    //...
+}
+```
+
+Utilize a rota `/auth/impersonate` para a funcionalidade de **personificação** de usuários.  
+Funcionalidade disponível apenas para usuários com a permissão `impersonate`.
 
 <!-- @formatter:off -->
 ```html
-<x-menu-item title="Personificar" icon="lucide.drama" link="/auth/impersonate" :hidden="auth()->user()->cannot('impersonate')" />
+<x-menu-item title="Personificar" link="/auth/impersonate" :hidden="auth()->user()->cannot('impersonate')" />
 ```
 <!-- @formatter:on -->
 
-**Adicione no arquivo de layout o aviso de personificação, quando em uso.**
+Adicione no arquivo de layout o aviso de personificação, quando em uso.
 
 ```html
 <!-- resources/views/layouts/app.blade.php -->
@@ -230,13 +246,13 @@ pubfic function mount(): void
 
 ## API RH
 
-**Este pacote possui a classe base para consultas na API RH.**
+Este pacote possui a classe base para consultas na API RH.
 
 ```php
 class PolvoService { ... }
 ```
 
-**Crie serviços de consulta baseados na classe `TJDFT\Laravel\Services\PolvoService`.**
+Crie serviços de consulta baseados na classe `TJDFT\Laravel\Services\PolvoService`.
 
 ```php
 namespace App\Services;
@@ -259,27 +275,25 @@ class FeriasPolvoService extends PolvoService
 }
 ```
 
-**Todas as consultas GraphQL tem um prazo de cache padrão de **1 hora**.**
+Todas as consultas GraphQL tem um prazo de cache padrão de **1 hora**.
 
 ```bash
-TJDFT_POLVO_CACHE_TTL='1 hour'
+TJDFT_POLVO_CACHE_TTL='1 hour'.   
 ```
 
-**Pra definir um prazo específico apenas para algumas consultas, utilize o método `lembrar()`.**
+Pra definir um prazo específico apenas para algumas consultas, utilize o método `lembrar()`.
 
 ```php
-// aceita qualquer string válida do `Carbon`
-
 $ferias = new FeriasPolvoService()->lembrar('1 day')->porMatricula("12345");
 ```
 
-**Para desabilitar o cache em consultas específicas, utilize o método `semCache()`.**
+Para desabilitar o cache em consultas específicas, utilize o método `semCache()`.
 
 ```php
 $ferias = new FeriasPolvoService()->semCache()->porMatricula("12345");
 ```
 
-**Para desabilitar completamente o cache tem todas as consultas GraphQL ajuste a variável de ambiente.**
+Para desabilitar completamente o cache tem todas as consultas GraphQL ajuste a variável de ambiente.
 
 ```bash
 TJDFT_POLVO_CACHE_TTL='0'
@@ -289,20 +303,19 @@ TJDFT_POLVO_CACHE_TTL='0'
 
 ## Pesquisa
 
-**Adicione o trait `HasSearchAny` nos models.**
+Adicione o trait `HasSearchAny` nos models pesquisáveis.
 
 ```php
 use TJDFT\Laravel\Traits\HasSearchAny;
+// ...
 
-class Rubrica extends Authenticatable
+class Rubrica extends Model
 {
-    use HasFactory, Notifiable, HasGrant, HasSearchAny;
+    use HasSearchAny;
     
     //...
 }
 ```
-
-**Exemplos de consultas.**
 
 ```php
 // Pesquisa em múltiplos campos, tratando acentuação e case sensitive automaticamente.
@@ -311,8 +324,6 @@ Rubrica::query()->searchAny(['nome', 'sigla'], $valor)->get();
 // Funciona também em colunas JSON
 Espelho::query()->searchAny(['dados->nome', 'dados->endereco'], $valor)->get();
 ```
-
-**Exemplo de índice.**
 
 ```php
 // Considere criar indices nas colunas JSON para melhorar a performance
@@ -357,22 +368,26 @@ Data::formatada($carbon, "-")     # Funciona também com objetos Carbon.
 
 ## Paginação
 
-**Utilize o trait `WithPaginationAndReset` nas telas com tabelas para reset automático de paginação, quando as propriedades de filtro forem atualizadas.**
+Utilize o trait `WithPaginationAndReset` nas telas com tabelas.  
+Quando os filtros forem alterados, a paginação será resetada automaticamente.
 
 ```php
 use TJDFT\Laravel\Traits\WithPaginationAndReset;
+// ...
 
 new class extends Component {
+
     use WithPaginationAndReset;
 
     // ...
 }
 ```
 
-**Reset manual, se necessário.**
+Limpa propriedades de filtro e resetar paginação.
 
 ```html
 <!-- Invoca manualmente o reset de paginação e propriedades de filtro -->
+
 <x-button label="Limpar" wire:click="clear()" />
 ```
 
@@ -384,8 +399,7 @@ Utilize a classe `AppException` na lógica de negócio para automaticamente exib
 
 ```php
 use TJDFT\Laravel\Exceptions\AppException;
-
-...
+// ...
 
 if ($consignacao->status_id === Status::FINALIZADA) {
     throw new AppException("Este contrato não pode ser alterado.");
@@ -403,13 +417,13 @@ Este pacote inclui um conjunto extra de ícones para utilização nos componente
 - https://materialdesignicons.com
 
 ```html
-<!-- Hero icons possuem prefixo "o-" -->
+<!-- Hero Icons possuem prefixo "o-" -->
 <x-button label="Salvar" icon="o-check" />
 
-<!-- Lucide icons possuem prefixo "lucide." -->
+<!-- Lucide Icons possuem prefixo "lucide." -->
 <x-button label="Consulta" icon="lucide.users" />
 
-<!-- MDI icons possuem prefixo "mdi." -->
+<!-- MDI Icons possuem prefixo "mdi." -->
 <x-button label="Contato" icon="mdi.whatsapp" />
 ```
 
@@ -417,28 +431,29 @@ Este pacote inclui um conjunto extra de ícones para utilização nos componente
 
 ## Autorização
 
-**Utilize a rota `/auth/permissions` para acessar o gerenciamento de permissões.**
+Utilize a rota `/auth/permissions` para acessar o gerenciamento de permissões.
 <!-- @formatter:off -->
 ```html
-<x-menu-item title="Permissões" icon="lucide.shield-check" link="/auth/permissions" :hidden="auth()->user()->cannot('permissoes.gerenciar')" />
+<x-menu-item title="Permissões" link="/auth/permissions" :hidden="auth()->user()->cannot('permissoes.gerenciar')" />
 ```
 <!-- @formatter:on -->
 
 
-**Adicione o trait `HasGrant` no model `User`.**
+Adicione o trait `HasGrant` no model `User`.
 
 ```php
 use TJDFT\Laravel\Traits\HasGrant;
+// ...
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasGrant;
+    use HasGrant;
     
     //...
 }
 ```
 
-**Estas roles e permissions são registradas automaticamente pelo pacote.**
+Estas são as roles e permissions inicias registradas automaticamente pelo pacote.
 
 ```php
 // Permissão master
@@ -483,13 +498,20 @@ public function mount(): void
 
 ```html
 <!-- Se não tem a permissão, oculta o menu -->
+
 <x-menu-item title="Criar Página" link="/paginas/create" :hidden="auth()->user()->cannot('paginas.criar')" />
 ```
 
-**EXEMPLO: crie outras roles e permissions na sua aplicação.**
+**EXEMPLO:** crie outras roles e permissions na sua aplicação.
 
 ```php
 // database/seeders/PermissionsSeeder.php
+
+use Illuminate\Database\Seeder;
+use TJDFT\Laravel\Models\Permission;
+use TJDFT\Laravel\Models\Role;
+
+// ...
 
 class PermissionsSeeder extends Seeder
 {
@@ -533,15 +555,14 @@ class PermissionsSeeder extends Seeder
         ])->assignRole('admin');
         
         // Note que é inviável atribuir previamente as roles para milhares de `funcionários`.        
-        // Confira o exmplo de roles/permissions dinâmicas abaixo.
+        // Confira o exemplo de roles/permissions dinâmicas abaixo.
     }
 }
 ```
 
-**EXEMPLO: lógica personalizada para definir dinamicamente roles/permissions.**
+**EXEMPLO:** lógica personalizada para definir dinamicamente roles/permissions.
 
 ```php
-// Esta clase é chamada automaticamente após o login do usuário.
 // app/Actions/AtualizarPermissionsLoginAction.php
 
 <?php
@@ -550,6 +571,10 @@ namespace App\Actions;
 
 use App\Models\User;
 
+/**
+ *  Esta classe é chamada automaticamente pelo pacote `tjdft/laravel` após o login do usuário.
+ *  Baseado nos dados do usuário, defina uma lógica para atribuição de roles.
+ */
 class AtualizarPermissionsLoginAction
 {
     public function __construct(private User $user)
@@ -557,8 +582,7 @@ class AtualizarPermissionsLoginAction
     }
 
     public function execute(): void
-    {
-        // Baseado nos dados do usuário, defina uma lógica para atribuição de roles.
+    { 
         // Exemplo: se é um `SERVIDOR`, atribua a role 'funcionario'.
         
         if ($this->user->rh_tipo === 'SERVIDOR') {
@@ -568,7 +592,7 @@ class AtualizarPermissionsLoginAction
 }
 ```
 
-**Adicione aos seeders padrão.**
+Adicione `PermissioSeeder` aos seeders da aplicação.
 
 ```php
 // database/seeders/DatabaseSeeder
@@ -586,7 +610,7 @@ class DatabaseSeeder extends Seeder
 }
 ```
 
-**Rode as migrations.**
+Rode as migrations.
 
 ```bash
 # Esta ação destruirá e recriará o banco!
@@ -598,14 +622,14 @@ php artisan migrate:fresh --seed
 
 ## Testes
 
-**Ajuste  `tests/Pest.php`.**
+Ajuste  `tests/Pest.php`.
 
 ```php
 
 pest()->extend(Tests\TestCase::class)->in('Feature', 'Unit');
 ```
 
-**Ajuste  `tests/TestCase.php`.**
+Ajuste  `tests/TestCase.php`.
 
 ```php
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -614,7 +638,13 @@ use TJDFT\Laravel\Traits\TestUtis;
 abstract class TestCase extends BaseTestCase
 {
     // Helpers para testes automatizados
-    use TestUtis;    
+    use TestUtis;
+    
+    // Equivale ao método `setUp()` do PHPUnit
+    protected function boot(): void
+    {
+        // Adicione aqui qualquer coisa que precise ser executada antes dos testes.
+    }    
 }
 ```
 
@@ -711,31 +741,17 @@ $this->get('/unidades/12345');
 $this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
 ````
 
-**EXEMPLO: `boot()`**
-
-```php
-abstract class TestCase extends \Orchestra\Testbench\TestCase
-{
-    use WithWorkbench, TestUtis;
-    
-    protected function boot(): void
-    {
-        // Adicione aqui qualquer coisa que precise ser executada antes dos testes.
-    }
-}
-```
-
 <br>
 
 ## Desenvolvimento local
 
-**Clone este repositório.**
+Execute o clone na raiz da sua aplicação.
 
 ```shell
 git clone git@github.com:tjdft/laravel.git packages/laravel
 ```
 
-**Adicione o repositório local no `composer.json` da aplicação.**
+Adicione o repositório local no `composer.json` da aplicação.
 
 
 <!-- @formatter:off -->
@@ -744,7 +760,7 @@ composer config repositories.local '{"type": "path", "url": "/var/www/html/packa
 ```
 <!-- @formatter:on -->
 
-**Instale a versão local do pacote.**
+Instale a versão local do pacote.
 
 ```shell
 composer require tjdft/laravel:@dev
@@ -754,7 +770,7 @@ composer require tjdft/laravel:@dev
 
 ---
 
-**Testes automatizados do pacote**
+Testes automatizados do pacote.
 
 ```shell
 # Entre na pasta do pacote

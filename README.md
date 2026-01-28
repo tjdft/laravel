@@ -768,6 +768,13 @@ composer require tjdft/laravel:@dev
 
 **Pronto!**
 
+Para voltar a utilizar a versão do Packagist.
+
+```shell
+composer config --unset repositories.local
+composer require tjdft/laravel
+```
+
 ---
 
 Testes automatizados do pacote.

@@ -93,9 +93,9 @@ class KeycloakController
 
             // Invoca action para ajuste de permissões
             try {
-                app()->make(config('tjdft.permissions_action'))->execute();
+                app()->make(config('tjdft.permissions_action'), ['user' => $users->first()])->execute();
             } catch (Throwable $e) {
-                // Sumprime erro caso a classe não exista
+                // Suprime erro caso a classe não exista
             }
 
             // Se houver mais de um cadastro, redireciona para página de escolha

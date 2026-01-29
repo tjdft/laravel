@@ -242,8 +242,12 @@ test('Invoca a action de Permissions adicionais da aplicação local', function 
     $this->logout();
 
     // Mock da action de permissões
-    $this->mock(config('tjdft.permissions_action'), function (MockInterface $mock) {
-        $mock->shouldReceive('execute')->once();
+    $mock = $this->mock(config('tjdft.permissions_action'));
+    $mock->shouldReceive('execute')->once();
+
+    // Use bind em vez de instance ou do helper $this->mock()
+    $this->app->bind(config('tjdft.permissions_action'), function () use ($mock) {
+        return $mock;
     });
 
     // Quando eu fizer login no keycloack

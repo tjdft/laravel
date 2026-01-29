@@ -28,24 +28,36 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 **Integração com o RH:**
 
 - Classe base para consulta na **API RH**.
-- Desambiguação de perfil para pessoas com **múltiplos vínculos no RH**.
+
+**Integração com o Sentry**
+
+- Pré-configuração do **Sentry** para monitoramento de erros.
+
+**Interface:**
+
+- Telas de gerenciamento de **permissions** e **impersonate**.
+- Tela para desambiguação para pessoas com **múltiplos vínculos no RH**.
+- Tela de **erro** padronizada.
+- Pacote extra de **ícones**.
+- Utilitários `Numero` e `Data` para diversas **formatações** em tela.
+- Trait `HasSearchAny` para busca simplificada em **múltiplos campos**.
+- Trait `WithPaginationAndReset` para paginação simplificada com **Livewire**.
+- Arquivos de **translation** em `pt_BR`.
 
 **Funcionalidades adicionais:**
 
-- Integração com o **Sentry**
-- Trait `HasSearchAny` para busca simplificada em **múltiplos campos**.
-- Trait `WithPaginationAndReset` para paginação simplificada com **Livewire**.
-- Utilitários `Numero` e `Data` para diversas **formatações** em tela.
-- Pacote extra de **ícones**.
-- Tela de **erro** padronizada.
 - Classes de **exception** padronizadas.
-- Arquivos de **translation** em `pt_BR`.
 - Utilitários para **testes automatizados**.
 - Ativa extensões úteis do **PostgreSQL**.
 
 <br>
 
-## Instalação
+# Instalação
+
+Utilize o **Instalador Laravel do TJDFT** para criar uma nova aplicação com este pacote pré-configurado.
+
+<details>
+  <summary>Ou, execute a instalação manual</summary>
 
 Adicione o pacote.
 
@@ -57,12 +69,6 @@ Instale maryUI incluído no pacote.
 
 ```
 php artisan mary:install
-```
-
-Altere o timezone em `config/app.php`
-
-```php
-'timezone' => 'America/Sao_Paulo',
 ```
 
 Altere o idioma em `.env`
@@ -85,6 +91,32 @@ use TJDFT\Laravel\ExceptionHandler;
     // Tratamento personalizado de exceções
     ExceptionHandler::register($exceptions);
 })
+```
+
+Ajuste  `tests/Pest.php`.
+
+```php
+
+pest()->extend(Tests\TestCase::class)->in('Feature', 'Unit');
+```
+
+Ajuste  `tests/TestCase.php`.
+
+```php
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use TJDFT\Laravel\Traits\TestUtis;
+
+abstract class TestCase extends BaseTestCase
+{
+    // Helpers para testes automatizados
+    use TestUtis;
+    
+    // Equivale ao `setUp()` do PHPUnit
+    protected function boot(): void
+    {
+        // Adicione aqui qualquer coisa que precise ser executada antes dos testes.
+    }    
+}
 ```
 
 Crie as novas variáveis de ambiente em `.env`.
@@ -129,7 +161,6 @@ Schema::create('users', function (Blueprint $table) {
     $table->timestamps();
 
     $table->unique(['cpf', 'matricula']);
-    $table->index(['cpf', 'matricula']);
 });
 ```
 
@@ -142,10 +173,12 @@ php artisan migrate:fresh --seed
 ```
 
 **Pronto!**
+</details>
+
 
 <br>
 
-## Autenticação
+# Autenticação
 
 Este pacote implementa o fluxo de autenticação via `Keycloak` para as rotas protegidas do sistema.
 
@@ -198,7 +231,7 @@ pubfic function mount(): void
 
 <br>
 
-## Impersonate
+# Impersonate
 
 Adicione o trait `HasImpersonate` no model `User`.
 
@@ -244,7 +277,7 @@ Adicione no arquivo de layout o aviso de personificação, quando em uso.
 
 <br>
 
-## API RH
+# API RH
 
 Este pacote possui a classe base para consultas na API RH.
 
@@ -301,7 +334,7 @@ TJDFT_POLVO_CACHE_TTL='0'
 
 <br>
 
-## Pesquisa
+# Pesquisa
 
 Adicione o trait `HasSearchAny` nos models pesquisáveis.
 
@@ -332,7 +365,7 @@ DB::statement("CREATE INDEX idx_meu_indice ON minha_tabela USING gin (immutable_
 
 <br>
 
-## Número
+# Número
 
 ```php
 use TJDFT\Laravel\Support\Numero; 
@@ -354,7 +387,7 @@ Numero::cnpj('12345678000195')      # 12.345.678-0001/95
 
 <br>
 
-## Data
+# Data
 
 ```php
 use TJDFT\Laravel\Support\Data;
@@ -366,7 +399,7 @@ Data::formatada($carbon, "-")     # Funciona também com objetos Carbon.
 
 <br>
 
-## Paginação
+# Paginação
 
 Utilize o trait `WithPaginationAndReset` nas telas com tabelas.  
 Quando os filtros forem alterados, a paginação será resetada automaticamente.
@@ -393,7 +426,7 @@ Limpa propriedades de filtro e resetar paginação.
 
 <br>
 
-## Exceptions
+# Exceptions
 
 Utilize a classe `AppException` na lógica de negócio para automaticamente exibir um **toast** do **maryUI**.
 
@@ -408,7 +441,7 @@ if ($consignacao->status_id === Status::FINALIZADA) {
 
 <br>
 
-## Ícones
+# Ícones
 
 Este pacote inclui um conjunto extra de ícones para utilização nos componentes do **maryUI**.
 
@@ -429,7 +462,7 @@ Este pacote inclui um conjunto extra de ícones para utilização nos componente
 
 <br>
 
-## Autorização
+# Autorização
 
 Utilize a rota `/auth/permissions` para acessar o gerenciamento de permissões.
 <!-- @formatter:off -->
@@ -453,7 +486,7 @@ class User extends Authenticatable
 }
 ```
 
-Estas são as roles e permissions inicias registradas automaticamente pelo pacote.
+Estas são as roles e permissions iniciais registradas automaticamente pelo pacote.
 
 ```php
 // Permissão master
@@ -620,33 +653,7 @@ php artisan migrate:fresh --seed
 
 <br>
 
-## Testes
-
-Ajuste  `tests/Pest.php`.
-
-```php
-
-pest()->extend(Tests\TestCase::class)->in('Feature', 'Unit');
-```
-
-Ajuste  `tests/TestCase.php`.
-
-```php
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use TJDFT\Laravel\Traits\TestUtis;
-
-abstract class TestCase extends BaseTestCase
-{
-    // Helpers para testes automatizados
-    use TestUtis;
-    
-    // Equivale ao método `setUp()` do PHPUnit
-    protected function boot(): void
-    {
-        // Adicione aqui qualquer coisa que precise ser executada antes dos testes.
-    }    
-}
-```
+# Testes
 
 **EXEMPLO: `login()`**
 
@@ -743,7 +750,7 @@ $this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
 
 <br>
 
-## Desenvolvimento local
+# Desenvolvimento local
 
 Execute o clone na raiz da sua aplicação.
 

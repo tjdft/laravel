@@ -58,7 +58,8 @@ Utilize o **Instalador Laravel do TJDFT** para criar uma nova aplicação com es
 
 <details>
   <summary>Ou, execute a instalação manual</summary>
-
+<br>
+    
 Adicione o pacote.
 
 ```bash

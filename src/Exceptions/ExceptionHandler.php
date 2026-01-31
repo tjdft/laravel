@@ -1,6 +1,6 @@
 <?php
 
-namespace TJDFT\Laravel;
+namespace TJDFT\Laravel\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Configuration\Exceptions as BaseExceptions;

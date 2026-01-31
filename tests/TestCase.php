@@ -59,6 +59,10 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         // Permssions action
         config()->set('tjdft.permissions_action', AtualizarPermissionsLoginAction::class);
 
+        // GraphQL Faker
+        config()->set('tjdft.graphql_faker.schema_path', '/../../../../../laravel/workbench/tests/faker.graphql');
+        config()->set('tjdft.graphql_faker.schema_overrides_path', '/../../../../../laravel/workbench/tests/faker.graphql.php');
+
         // Namespace de views para `layouts` do Livewire
         $app['view']->addNamespace('layouts', workbench_path('resources/views/layouts'));
     }

@@ -59,7 +59,7 @@ Utilize o **Instalador Laravel do TJDFT** para criar uma nova aplicação com es
 <details>
   <summary>Ou, execute a instalação manual</summary>
 <br>
-    
+
 Adicione o pacote.
 
 ```bash
@@ -81,7 +81,7 @@ APP_LOCALE=pt_BR
 Adicione as configurações de middleware e exceptions em `bootstrap/app.php`.
 
 ```php
-use TJDFT\Laravel\ExceptionHandler;
+use TJDFT\Laravel\Exceptions\ExceptionHandler;
 // ...
 
 ->withMiddleware(function (Middleware $middleware) {
@@ -748,6 +748,56 @@ $this->get('/unidades/12345');
 // Então query GraphQL que foi executada pelo PolvoService NÃO contém um trecho esperado
 $this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
 ````
+
+<br>
+
+# Fake graphQL
+
+Caso sua aplicação utilize o **PolvoService** para consultas na API RH:
+
+1. Obtenha o schema **SDL** original da API RH e salve como `tests/faker.graphql`.
+
+```shell
+# Pode ser obtido executando este comando no terminal da API RH.
+# Baixe o arquivo e copie o seu conteúdo para `tests/faker.graphql`
+
+php artisan lighthouse:print-schema > schema.graphql
+```
+
+2. Ajuste o arquivo `phpunit.xml`
+
+```xml
+<!-- Este pacote expõe o endpoint `/graphql-faker` para simular respostas da API RH baseado no arquivo `tests/faker.graphql` -->
+
+<env name="TJDFT_POLVO_API_URL" value="http://localhost:8080/graphql-faker"/>
+```
+
+3. Crie o arquivo `tests/faker.graphql.php`
+
+```php
+<?php
+
+use Faker\Factory;
+
+$faker = Factory::create();
+
+/*
+ * Sobrescreve valores aleatórios do faker graphQL para casos específicos.
+ *
+ */
+
+/**
+ * EXEMPLO:
+ * 
+ * Em algumas situações, é necessário que determinados campos tenham valores conhecidos ou "datas de início e fim" coerentes, para validação de regras.
+ * Pois, caso contrário, os testes podem falhar de maneira intermitente.
+ */
+return [
+    'CapacitacaoParticipante.aprovado' => true,
+    'Afastamento.dataInicio' => '2021-01-01',
+    'Afastamento.dataFim' => '2021-01-31',
+];
+```
 
 <br>
 

@@ -52,6 +52,7 @@ class PolvoService
         }
 
         $response = Http::retry(3, 2000)
+            ->accept('application/json')
             ->withToken($this->getToken())
             ->withOptions(['allow_redirects' => false])
             ->post(config('tjdft.polvo.api_url'), ['query' => $query])

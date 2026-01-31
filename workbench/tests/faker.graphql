@@ -1,0 +1,14 @@
+type CapacitacaoParticipante {
+    id: ID
+    codigo: String
+    dataSistema: Date
+    dataInicio: Date
+    dataFim: String
+    aprovado: Boolean
+    isVinculado: Boolean!
+}
+
+type Query {
+    capacitacoes: [CapacitacaoParticipante]
+}
+

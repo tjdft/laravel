@@ -96,7 +96,7 @@ trait TestUtis
         Http::preventStrayRequests();
 
         // Exceto ao Polvo fake que roda localmente. Veja `TJDFT_POLVO_API_URL` em `phpunit.xml`
-        Http::allowStrayRequests(["http://polvo-faker:9002/graphql"]);
+        Http::allowStrayRequests(["http://localhost:*/graphql-faker"]);
     }
 
     /**

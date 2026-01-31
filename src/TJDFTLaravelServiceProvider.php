@@ -17,6 +17,7 @@ class TJDFTLaravelServiceProvider extends ServiceProvider
     {
         // Rotas
         $this->loadroutesFrom(__DIR__ . '/../routes/web.php');
+        $this->loadroutesFrom(__DIR__ . '/../routes/api.php');
 
         // Configuração
         $this->mergeConfigFrom(__DIR__ . '/../config/tjdft.php', 'tjdft');

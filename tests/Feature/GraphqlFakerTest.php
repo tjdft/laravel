@@ -1,17 +1,9 @@
 <?php
 
-beforeEach(function () {
-    // Define o ambiente como `local`
-    app()->detectEnvironment(fn() => 'local');
-});
+test('Expõe o endpoint apenas se mode fake estiver ativado', function () {
+    config()->set('tjdft.polvo.api_url', "http://example.com/graphql-faker");
 
-test('Expõe o endpoint GraphQL Faker apenas em ambiente local', function () {
-    // Simula o ambiente como `production`
-    app()->detectEnvironment(fn() => 'production');
-
-    $this->post('/graphql-faker')
-        ->assertForbidden()
-        ->assertSeeText('GraphQL faker permitido apenas com `APP_ENV=local`.');
+    $this->post(config('tjdft.polvo.api_url'))->assertForbidden();
 });
 
 test('Retorna dados fake conforme o schema e overrides definidos', function () {

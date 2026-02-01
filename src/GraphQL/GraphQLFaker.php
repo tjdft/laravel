@@ -30,7 +30,10 @@ class GraphQLFaker
 
     public function __invoke(Request $request)
     {
-        abort_unless(app()->isLocal(), 403, 'GraphQL faker permitido apenas com `APP_ENV=local`.');
+        // Permite apenas em ambiente local
+        $isLocal = in_array($request->host(), ["localhost", "127.0.0.1", "0.0.0.0"]);
+
+        abort_unless($isLocal, 403, 'GraphQL faker permitido apenas em ambiente local.');
 
         return response()->json(
             $this->handle(
@@ -80,7 +83,7 @@ class GraphQLFaker
 
     protected function loadOverrides(): void
     {
-        $this->fieldOverrides = require base_path(config('tjdft.graphql_faker.schema_overrides_path'));
+        $this->fieldOverrides = require base_path(config('tjdft.graphql_faker.schema_path_overrides'));
     }
 
     protected function fakeSelectionSet(string $rootType, SelectionSetNode $selectionSet): array

@@ -753,7 +753,9 @@ $this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
 
 # Fake graphQL
 
-Caso sua aplicação utilize o **PolvoService** para consultas na API RH:
+Este pacote expõe o endpoint `/graphql-faker` para simular respostas de APIs graphQL externas.
+
+Durante a execução dos testes, o endereço da API RH é **automaticamente substituído por** `http://localhost:8080/graphql-faker`.
 
 1. Obtenha o schema **SDL** original da API RH e salve como `tests/faker.graphql`.
 
@@ -764,15 +766,7 @@ Caso sua aplicação utilize o **PolvoService** para consultas na API RH:
 php artisan lighthouse:print-schema > schema.graphql
 ```
 
-2. Ajuste o arquivo `phpunit.xml`
-
-```xml
-<!-- Este pacote expõe o endpoint `/graphql-faker` para simular respostas da API RH baseado no arquivo `tests/faker.graphql` -->
-
-<env name="TJDFT_POLVO_API_URL" value="http://localhost:8080/graphql-faker"/>
-```
-
-3. Crie o arquivo `tests/faker.graphql.php`
+2. Crie o arquivo `tests/faker.graphql.php`
 
 ```php
 <?php

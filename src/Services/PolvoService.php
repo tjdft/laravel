@@ -4,7 +4,6 @@ namespace TJDFT\Laravel\Services;
 
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use TJDFT\Laravel\Exceptions\PolvoException;
 use TJDFT\Laravel\Traits\PolvoCache;
@@ -32,7 +31,17 @@ class PolvoService
     public static function fake(): void
     {
         // Define um token. Evita ida ao Keycloack durante os testes
-        Cache::put('polvo_token', 'fake_token_123');
+        cache()->put('polvo_token', 'fake_token_123');
+
+        // Altera a URL da API para o Polvo Fake local
+        config()->set('tjdft.polvo.api_url', 'http://localhost:8080/graphql-faker');
+
+        // Exceto ao Polvo fake que roda localmente. Veja `TJDFT_POLVO_API_URL` em `phpunit.xml`
+        Http::allowStrayRequests([
+            "http://localhost:*/graphql-faker",
+            "http://127.0.0.1:*/graphql-faker",
+            "http://0.0.0.0:*/graphql-faker"
+        ]);
 
         // Reseta queries acumuladas entre cada caso de teste
         self::$query = '';
@@ -81,8 +90,8 @@ class PolvoService
     public function getToken(): string
     {
         // Se o token em cache ainda for válido retorna o mesmo token.
-        if (Cache::has('polvo_token')) {
-            return Cache::get('polvo_token');
+        if (cache()->has('polvo_token')) {
+            return cache()->get('polvo_token');
         }
 
         // Autenticação no SSO
@@ -92,7 +101,7 @@ class PolvoService
         $validade = $response['expires_in'] - 60;
 
         // Coloca o token em cache durante o prazo de validade.
-        Cache::put('polvo_token', $token, $validade);
+        cache()->put('polvo_token', $token, $validade);
 
         return $token;
     }

@@ -50,6 +50,6 @@ return [
     // GRAPHQL FAKER
     'graphql_faker' => [
         'schema_path' => env('TJDFT_GRAPHQL_FAKER_SCHEMA_PATH', 'tests/faker.graphql'),
-        'schema_overrides_path' => env('TJDFT_GRAPHQL_FAKER_SCHEMA_OVERRIDES_PATH', 'tests/faker.graphql.php'),
+        'schema_path_overrides' => env('TJDFT_GRAPHQL_FAKER_SCHEMA_PATH_OVERRIDES', 'tests/faker.graphql.php'),
     ]
 ];

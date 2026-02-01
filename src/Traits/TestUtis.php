@@ -83,6 +83,9 @@ trait TestUtis
             $this->boot();
         }
 
+        // Bloqueia TODAS as requisições HTTP externas não mockadas.
+        Http::preventStrayRequests();
+
         // Polvo no modo Fake
         PolvoService::fake();
 
@@ -91,12 +94,6 @@ trait TestUtis
 
         // Desliga o Vite
         $this->withoutVite();
-
-        // Bloqueia TODAS as requisições HTTP externas não mockadas.
-        Http::preventStrayRequests();
-
-        // Exceto ao Polvo fake que roda localmente. Veja `TJDFT_POLVO_API_URL` em `phpunit.xml`
-        Http::allowStrayRequests(["http://localhost:*/graphql-faker"]);
     }
 
     /**

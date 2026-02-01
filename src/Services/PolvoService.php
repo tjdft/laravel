@@ -33,9 +33,6 @@ class PolvoService
         // Define um token. Evita ida ao Keycloack durante os testes
         cache()->put('polvo_token', 'fake_token_123');
 
-        // Altera a URL da API para o Polvo Fake local
-        config()->set('tjdft.polvo.api_url', 'http://localhost:8080/graphql-faker');
-
         // Exceto ao Polvo fake que roda localmente. Veja `TJDFT_POLVO_API_URL` em `phpunit.xml`
         Http::allowStrayRequests([
             "http://localhost:*/graphql-faker",

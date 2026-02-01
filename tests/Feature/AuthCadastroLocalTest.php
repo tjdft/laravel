@@ -58,7 +58,7 @@ beforeEach(function () {
 
     // Mock da resposta do Polvo
     Http::fake([
-        config('tjdft.polvo.api_url') => function () {
+        '/graphql' => function () {
             return Http::response([
                 'data' => [
                     'pessoas' => [

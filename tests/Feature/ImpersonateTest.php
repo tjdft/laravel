@@ -55,7 +55,7 @@ test('Não pode personificar 2 usuários ao mesmo tempo.', function () {
 
 test('Não pode personificar um login INEXISTENTE no RH', function () {
     // Fake Graphql para simular login inexistente
-    Http::fake([config('tjdft.polvo.api_url') => [null]]);
+    Http::fake(['/graphql' => [null]]);
 
     // Dado que estou logado com permissão de personificação
     $usuario_original = $this->login(permission: 'impersonate');
@@ -74,7 +74,7 @@ test('Não pode personificar um login INEXISTENTE no RH', function () {
 test('Não pode personificar administradores', function () {
     // Dado que existe um usuário no RH, mas que localmente no sistema é um administrador
     Http::fake([
-        config('tjdft.polvo.api_url') => [
+        '/graphql' => [
             'data' => [
                 'pessoas' => [
                     'data' => [
@@ -114,7 +114,7 @@ test('Não pode personificar administradores', function () {
 test('Não pode personificar pessoas sem CPF ou MATRÍCULA', function () {
     // Dado que existe um usuário no RH sem CPF ou matrícula
     Http::fake([
-        config('tjdft.polvo.api_url') => [
+        '/graphql' => [
             'data' => [
                 'pessoas' => [
                     'data' => [
@@ -158,7 +158,7 @@ test('Personifica um usuário EXISTENTE no sistema local', function () {
 
     // Dado que este usuário existe na API RH
     Http::fake([
-        config('tjdft.polvo.api_url') => [
+        '/graphql' => [
             'data' => [
                 'pessoas' => [
                     'data' => [
@@ -197,7 +197,7 @@ test('Personifica um usuário INEXISTENTE no sistema local', function () {
 
     // Dado que existe um usuário na API RH
     Http::fake([
-        config('tjdft.polvo.api_url') => [
+        '/graphql' => [
             'data' => [
                 'pessoas' => [
                     'data' => [

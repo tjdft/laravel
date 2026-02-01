@@ -5,7 +5,7 @@ use TJDFT\Laravel\Exceptions\PolvoException;
 use TJDFT\Laravel\Services\PessoasPolvoService;
 
 test('Resposta vazia', function () {
-    Http::fake([config('tjdft.polvo.api_url') => Http::response()]);
+    Http::fake(['/graphql' => Http::response()]);
 
     new PessoasPolvoService()->porCpf(123);
     //
@@ -13,7 +13,7 @@ test('Resposta vazia', function () {
 
 test('Erro graphQL conhecido', function () {
     Http::fake([
-        config('tjdft.polvo.api_url') => [
+        '/graphql' => [
             'errors' => [
                 [
                     'message' => 'erro retornado fake',
@@ -28,7 +28,7 @@ test('Erro graphQL conhecido', function () {
 
 test('Erro graphQL desconhecido', function () {
     Http::fake([
-        config('tjdft.polvo.api_url') => [
+        '/graphql' => [
             'errors' => [
                 [],
             ]

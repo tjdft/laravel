@@ -42,7 +42,7 @@ jobs:
 
       - name: Test
         run: |
-          php artisan serve --port=8080 &
+          php -S 127.0.0.1:8080 -t public public/index.php
           composer test:coverage
 
       - name: Upload coverage reports to Codecov

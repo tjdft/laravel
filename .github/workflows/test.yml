@@ -40,9 +40,13 @@ jobs:
         run: |
           composer install --prefer-dist --no-interaction --no-progress --ansi
 
+      - name: Start PHP server
+        run: |
+          php -S 127.0.0.1:8080 -t public > server.log 2>&1 &
+          sleep 2
+
       - name: Test
         run: |
-          php -S 127.0.0.1:8080 -t public public/index.php
           composer test:coverage
 
       - name: Upload coverage reports to Codecov

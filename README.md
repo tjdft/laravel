@@ -69,7 +69,7 @@ composer require tjdft/laravel
 Instale maryUI incluído no pacote.
 
 ```
-php artisan mary:install
+php artisan mary:install --yarn
 ```
 
 Altere o idioma em `.env`

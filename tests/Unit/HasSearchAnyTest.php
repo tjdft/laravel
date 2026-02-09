@@ -34,12 +34,12 @@ test('Pesquisa em campo JSON', function () {
     // Dado que existe um usuário com localização que contém `rio`
     $jorge = User::factory()->create([
         'nome' => 'Jorge',
-        'localizacao' => ['cidade' => 'Rio de Janeiro']
+        'localizacao' => ['cidade' => 'RIXXA de Janeiro']
     ]);
 
     // Dado que existe um usuário com nome que contém `rio`
     $maria = User::factory()->create([
-        'nome' => 'Maria Rio',
+        'nome' => 'Maria RIXXA',
         'localizacao' => ['cidade' => 'Belo Horizonte']
     ]);
 
@@ -50,7 +50,7 @@ test('Pesquisa em campo JSON', function () {
     ]);
 
     // Quando realiza a busca
-    $users = User::query()->searchAny(['localizacao->cidade', 'nome'], 'rio')->get();
+    $users = User::query()->searchAny(['localizacao->cidade', 'nome'], 'rixxa')->get();
 
     // Então verifica se os resultados contêm apenas os registros esperados
     expect($users->count())->toBe(2)

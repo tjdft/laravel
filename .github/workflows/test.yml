@@ -2,7 +2,6 @@ name: Testes
 
 on:
   push:
-  pull_request:
 
 jobs:
   testes:
@@ -38,18 +37,12 @@ jobs:
 
       - name: Install
         run: |
-          composer install --prefer-dist --no-interaction --no-progress --ansi
+          composer install --prefer-dist --no-interaction --no-progress --quiet --ansi
 
       - name: Test
         run: composer test:coverage
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

@@ -5,7 +5,9 @@ namespace TJDFT\Laravel\Traits;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use TJDFT\Laravel\Services\PolvoService;
 
 trait TestUtis
@@ -83,6 +85,12 @@ trait TestUtis
             $this->boot();
         }
 
+        // Ativa fake de Jobs
+        Bus::fake();
+
+        // Ativa fake de e-emails
+        Mail::fake();
+
         // Bloqueia TODAS as requisições HTTP externas não mockadas.
         Http::preventStrayRequests();
 
@@ -94,6 +102,12 @@ trait TestUtis
 
         // Desliga o Vite
         $this->withoutVite();
+
+        // Desliga chamadas defer()
+        $this->withoutDefer();
+
+        // Torna indexação do Scout síncrona
+        config()->set('scout.queue', false);
     }
 
     /**

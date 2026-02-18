@@ -33,6 +33,11 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
 - Pré-configuração do **Sentry** para monitoramento de erros.
 
+**Integração com o SMAX**
+
+- Abertura de requisições no **SMAX** via API.
+- Envio de e-mail para equipe de atendimento em caso de indisponibilidade da API.
+
 **Interface:**
 
 - Telas de gerenciamento de **permissions** e **impersonate**.
@@ -126,6 +131,10 @@ Crie as novas variáveis de ambiente em `.env`.
 # Sentry
 TJDFT_SENTRY_LARAVEL_DSN=
 
+# Schema onde devem ser ativadas as extensões do PostgreSQL
+# Use apenas se o schema principal da aplicação for diferente de `public`.
+TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
+
 # API RH
 TJDFT_POLVO_API_URL=https://<URL_API_RH>/graphql
 TJDFT_POLVO_AUTH_URL=https://<URL_KEYCLOAK>/auth/realms/<NOME_REALM>/protocol/openid-connect/token
@@ -139,9 +148,13 @@ TJDFT_KEYCLOAK_REALMS=<NOME_REALM>
 TJDFT_KEYCLOAK_CLIENT_ID=<NOME_CLIENT>
 TJDFT_KEYCLOAK_CLIENT_SECRET=<SEGREDO>
 
-# Schema onde devem ser ativadas as extensões do PostgreSQL
-# Use apenas se o schema principal da aplicação for diferente de `public`.
-TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
+# SMAX
+SMAX_URL=https://<URL_SMAX>
+SMAX_TENANT_ID=<TENANT_DO_SMAX>
+SMAX_REQUESTS_OFFERING=<OFERTA_DO_SMAX>
+SMAX_LOGIN=
+SMAX_PASSWORD=
+SMAX_FALLBACK_EMAILS=
 ```
 
 Ajuste a migration existente `users`.
@@ -274,6 +287,39 @@ Adicione no arquivo de layout o aviso de personificação, quando em uso.
         Conteúdo da página ...
     </div>
 </body>
+```
+
+<br>
+
+# Sentry
+
+Este pacote possui a integração com o SENTRY para monitoramento de erros.
+
+```php
+# Defina a DSN do Sentry para ativar a integração.
+
+TJDFT_SENTRY_LARAVEL_DSN=
+```
+
+<br>
+
+# SMAX
+
+Este pacote possui a integração com o SMAX (Central de Atendimento).
+
+Em caso de indisponibilidade da API, um e-mail será enviado para os destinatários configurados em `SMAX_FALLBACK_EMAILS`.
+
+```php
+$feedback = [
+    'nome' => auth()->user()->nome,
+    'email' => auth()->user()->email,
+    'login' => auth()->user()->login,
+    'conteudo' => $dados['conteudo'],
+    'url' => request()->header('Referer') ?? url()->previous(),
+];
+
+// Executa em background
+defer(fn() => new SmaxService()->criarRequisicao($feedback));
 ```
 
 <br>

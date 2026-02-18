@@ -114,16 +114,15 @@ class GraphQLFaker
                 throw new Error("Cannot query field \"{$fieldName}\" on type \"{$type}\".");
             }
 
-            //$type = $definition->name?->value;
             $currentPath = "{$type}.{$fieldName}";
 
-            $data[$fieldName] = $this->fakeField($fieldDef, $selection->selectionSet ?? null, $currentPath);
+            $data[$fieldName] = $this->fakeField($fieldDef, $currentPath, $selection->selectionSet ?? null);
         }
 
         return $data;
     }
 
-    protected function fakeField(FieldDefinitionNode $field, ?SelectionSetNode $selectionSet = null, string $path)
+    protected function fakeField(FieldDefinitionNode $field, string $path, ?SelectionSetNode $selectionSet = null)
     {
         // 🔥 Override tem prioridade total
         if (array_key_exists($path, $this->fieldOverrides)) {
@@ -132,37 +131,37 @@ class GraphQLFaker
             return is_callable($value) ? $value() : $value;
         }
 
-        return $this->fakeType($field->type, $selectionSet, $path);
+        return $this->fakeType($field->type, $path, $selectionSet);
     }
 
-    protected function fakeType($type, ?SelectionSetNode $selectionSet = null, string $path)
+    protected function fakeType($type, string $path, ?SelectionSetNode $selectionSet = null)
     {
         if ($type instanceof NonNullTypeNode) {
-            return $this->fakeType($type->type, $selectionSet, $path);
+            return $this->fakeType($type->type, $path, $selectionSet);
         }
 
         if ($type instanceof ListTypeNode) {
             return collect(range(1, rand(1, 2)))
-                ->map(fn() => $this->fakeType($type->type, $selectionSet, $path))
+                ->map(fn() => $this->fakeType($type->type, $path, $selectionSet))
                 ->all();
         }
 
         if ($type instanceof NamedTypeNode) {
-            return $this->fakeNamedType($type->name->value, $selectionSet, $path);
+            return $this->fakeNamedType($type->name->value, $path, $selectionSet);
         }
 
         return null;
     }
 
-    protected function fakeNamedType(string $name, ?SelectionSetNode $selectionSet = null, string $path)
+    protected function fakeNamedType(string $name, string $path, ?SelectionSetNode $selectionSet = null)
     {
         // Não adianta gerar dados aleatórios, pois não há como validar nos testes
         return match ($name) {
-            'ID' => (string) $this->faker->uuid,
+            'ID' => (string) $this->faker->uuid(),
             'String' => 'string',
             'Int' => 123,
             'Float' => 123.9,
-            'Boolean' => $this->faker->boolean,
+            'Boolean' => $this->faker->boolean(),
             'Date' => $this->faker->date(),
             default => $this->fakeObject($name, $selectionSet, $path . '.'),
         };

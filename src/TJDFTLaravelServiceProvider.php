@@ -32,9 +32,6 @@ class TJDFTLaravelServiceProvider extends ServiceProvider
         // Encaminha as configurações do Keycloak para o pacote `socialiteproviders/keycloak`
         config()->set('services.keycloak', config('tjdft.keycloak'));
 
-        // Encaminha as configurações do Sentry para o pacote `sentry/sentry-laravel`
-        config()->set('sentry.dsn', config('tjdft.sentry.dsn'));
-
         // Carrega os componentes do Livewire
         Livewire::addNamespace('tjdft', __DIR__ . '/../resources/views/pages');
 

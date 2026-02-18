@@ -9,12 +9,14 @@ use Mary\Exceptions\ToastException;
 use Sentry\Laravel\Integration;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
+use function Sentry\init;
 
 class ExceptionHandler
 {
     public static function register(BaseExceptions $exceptions): void
     {
         // Sentry
+        init(['dsn' => config('tjdft.sentry.dsn')]);
         Integration::handles($exceptions);
 
         $exceptions->respond(function (Response $response, Throwable $e, Request $request) {

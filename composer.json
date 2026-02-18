@@ -25,7 +25,7 @@
         "technikermathe/blade-lucide-icons": "^3.137",
         "postare/blade-mdi": "^1.1",
         "sentry/sentry-laravel": "^4.20",
-        "robsontenorio/mary": "^2.6",
+        "robsontenorio/mary": "^2.7",
         "livewire/livewire": "^4.1",
         "webonyx/graphql-php": "^15.30",
         "fakerphp/faker": "^1.24"

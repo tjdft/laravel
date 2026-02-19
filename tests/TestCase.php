@@ -45,6 +45,9 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
 
     protected function defineEnvironment($app): void
     {
+        // App name
+        config()->set('app.name', 'Teste');
+
         // Configurações do Polvo
         config()->set('tjdft.polvo.api_url', 'https://polvo.com/graphql');
         config()->set('tjdft.polvo.auth_url', 'https://polvo.com/auth/realms/COMPANY/protocol/openid-connect/token');
@@ -55,6 +58,12 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         config()->set('tjdft.keycloak.client_id', 'exemplo');
         config()->set('tjdft.keycloak.client_secret', 'exemplo');
         config()->set('tjdft.keycloak.redirect', '/abc/test');
+
+        // Configurações do SMAX
+        config()->set('tjdft.smax.api_url', 'https://smax.com');
+        config()->set('tjdft.smax.auth_url', 'https://smax.com/auth/authentication-endpoint/authenticate/');
+        config()->set('tjdft.smax.requests_offering', '12345');
+        config()->set('tjdft.smax.fallback_emails', 'joao@joao.com,maria@maria.com');
 
         // Permssions action
         config()->set('tjdft.permissions_action', AtualizarPermissionsLoginAction::class);

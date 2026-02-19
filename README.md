@@ -22,8 +22,8 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 **Autenticação e Autorização:**
 
 - Fluxo de autenticação com **Keycloak**.
-- Funcionalidade de **Impersonate**.
 - Gerenciamento de **Permissões**.
+- Funcionalidade de **Impersonate**.
 
 **Integração com o RH:**
 
@@ -35,25 +35,26 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
 **Integração com o SMAX**
 
-- Abertura de requisições no **SMAX** via API.
-- Envio de e-mail para equipe de atendimento em caso de indisponibilidade da API.
+- Abertura de requisições no **SMAX** (Central de Atendimento).
 
 **Interface:**
 
-- Telas de gerenciamento de **permissions** e **impersonate**.
-- Tela para desambiguação para pessoas com **múltiplos vínculos no RH**.
 - Tela de **erro** padronizada.
 - Pacote extra de **ícones**.
+- Arquivos de **translation** em `pt_BR`.
 - Utilitários `Numero` e `Data` para diversas **formatações** em tela.
 - Trait `HasSearchAny` para busca simplificada em **múltiplos campos**.
 - Trait `WithPaginationAndReset` para paginação simplificada com **Livewire**.
-- Arquivos de **translation** em `pt_BR`.
+- Trait `HasSpinnerPlaceholder` para exibir um spinner em componentes `lazy`.
 
-**Funcionalidades adicionais:**
+**Testes automatizados:**
 
-- Classes de **exception** padronizadas.
-- Utilitários para **testes automatizados**.
-- Ativa extensões úteis do **PostgreSQL**.
+- Trait `TestUtils` com métodos auxiliares para testes automatizados.
+- **GraphQL Faker** para simular respostas da **API RH** em ambiente de testes.
+
+**Postgres:**
+
+- Ativa extensões úteis do **PostgreSQL** (unaccent, pg_trgm).
 
 <br>
 
@@ -90,7 +91,7 @@ use TJDFT\Laravel\Exceptions\ExceptionHandler;
 // ...
 
 ->withMiddleware(function (Middleware $middleware) {
-    // Para funcionar no Openshift e outros ambientes com proxies reversos
+    // Para proxy reverso (Openshift)
     $middleware->trustProxies(at: '*');
 })
 ->withExceptions(function (Exceptions $exceptions) {
@@ -149,12 +150,12 @@ TJDFT_KEYCLOAK_CLIENT_ID=<NOME_CLIENT>
 TJDFT_KEYCLOAK_CLIENT_SECRET=<SEGREDO>
 
 # SMAX
-SMAX_URL=https://<URL_SMAX>
-SMAX_TENANT_ID=<TENANT_DO_SMAX>
-SMAX_REQUESTS_OFFERING=<OFERTA_DO_SMAX>
-SMAX_LOGIN=
-SMAX_PASSWORD=
-SMAX_FALLBACK_EMAILS=
+TJDFT_SMAX_URL=https://<URL_BASE_SMAX>
+TJDFT_SMAX_TENANT_ID=<ID_TENANT_DO_SMAX>
+TJDFT_SMAX_REQUESTS_OFFERING=<IDA_FERTA_DO_SMAX>
+TJDFT_SMAX_LOGIN=
+TJDFT_SMAX_PASSWORD=
+TJDFT_SMAX_FALLBACK_EMAILS=
 ```
 
 Ajuste a migration existente `users`.
@@ -194,7 +195,7 @@ php artisan migrate:fresh --seed
 
 # Autenticação
 
-Este pacote implementa o fluxo de autenticação via `Keycloak` para as rotas protegidas do sistema.
+Este pacote implementa o fluxo de autenticação OAuth2 via `Keycloak` para as rotas protegidas do sistema.
 
 ```php
 // Rotas protegidas 
@@ -222,7 +223,7 @@ Ex: Se o usuário possui vínculo de Pensão Alimentícia e Servidor, então ele
 ```
 
 ```html
-<!-- Opção em menu -->
+<!-- Opção em menu para alternar o perfil -->
 
 <x-menu-item title="Alterar perfil" link="/auth/perfil" />
 ```
@@ -241,270 +242,6 @@ pubfic function mount(): void
 <!-- Se não tem a permissão, oculta o menu -->
 
 <x-menu-item title="Criar Página" link="/paginas/create" :hidden="auth()->user()->cannot('paginas.criar')" />
-```
-
-<br>
-
-# Impersonate
-
-Adicione o trait `HasImpersonate` no model `User`.
-
-```php
-use TJDFT\Laravel\Traits\HasImpersonate;
-// ...
-
-class User extends Authenticatable
-{
-    use HasImpersonate;
-    
-    //...
-}
-```
-
-Utilize a rota `/auth/impersonate` para a funcionalidade de **personificação** de usuários.  
-Funcionalidade disponível apenas para usuários com a permissão `impersonate`.
-
-<!-- @formatter:off -->
-```html
-<x-menu-item title="Personificar" link="/auth/impersonate" :hidden="auth()->user()->cannot('impersonate')" />
-```
-<!-- @formatter:on -->
-
-Adicione no arquivo de layout o aviso de personificação, quando em uso.
-
-```html
-<!-- resources/views/layouts/app.blade.php -->
-
-<body>
-    <!-- Aviso de Impersonate -->
-    <livewire:tjdft::impersonating />
-
-    <div>
-        Menu superior ...
-    </div>
-
-    <div>
-        Conteúdo da página ...
-    </div>
-</body>
-```
-
-<br>
-
-# Sentry
-
-Este pacote possui a integração com o SENTRY para monitoramento de erros.
-
-```php
-# Defina a DSN do Sentry para ativar a integração.
-
-TJDFT_SENTRY_LARAVEL_DSN=
-```
-
-<br>
-
-# SMAX
-
-Este pacote possui a integração com o SMAX (Central de Atendimento).
-
-Em caso de indisponibilidade da API, um e-mail será enviado para os destinatários configurados em `SMAX_FALLBACK_EMAILS`.
-
-```php
-$feedback = [
-    'nome' => auth()->user()->nome,
-    'email' => auth()->user()->email,
-    'login' => auth()->user()->login,
-    'conteudo' => $dados['conteudo'],
-    'url' => request()->header('Referer') ?? url()->previous(),
-];
-
-// Executa em background
-defer(fn() => new SmaxService()->criarRequisicao($feedback));
-```
-
-<br>
-
-# API RH
-
-Este pacote possui a classe base para consultas na API RH.
-
-```php
-class PolvoService { ... }
-```
-
-Crie serviços de consulta baseados na classe `TJDFT\Laravel\Services\PolvoService`.
-
-```php
-namespace App\Services;
-
-use Illuminate\Support\Collection;
-use TJDFT\Laravel\Services\PolvoService;
-
-
-class FeriasPolvoService extends PolvoService
-{
-     public function porMatricula(string $matricula): Collection
-     {
-        $query = "{ ... query GraphQL ... }";
-        
-        // Método herdado da classe PolvoService
-        $response = $this->graphql($query);
-
-        return collect($response['data']['servidor']['dadosFuncionais']['ferias']['data'] ?? []);
-     } 
-}
-```
-
-Todas as consultas GraphQL tem um prazo de cache padrão de **1 hora**.
-
-```bash
-TJDFT_POLVO_CACHE_TTL='1 hour'.   
-```
-
-Pra definir um prazo específico apenas para algumas consultas, utilize o método `lembrar()`.
-
-```php
-$ferias = new FeriasPolvoService()->lembrar('1 day')->porMatricula("12345");
-```
-
-Para desabilitar o cache em consultas específicas, utilize o método `semCache()`.
-
-```php
-$ferias = new FeriasPolvoService()->semCache()->porMatricula("12345");
-```
-
-Para desabilitar completamente o cache tem todas as consultas GraphQL ajuste a variável de ambiente.
-
-```bash
-TJDFT_POLVO_CACHE_TTL='0'
-```
-
-<br>
-
-# Pesquisa
-
-Adicione o trait `HasSearchAny` nos models pesquisáveis.
-
-```php
-use TJDFT\Laravel\Traits\HasSearchAny;
-// ...
-
-class Rubrica extends Model
-{
-    use HasSearchAny;
-    
-    //...
-}
-```
-
-```php
-// Pesquisa em múltiplos campos, tratando acentuação e case sensitive automaticamente.
-Rubrica::query()->searchAny(['nome', 'sigla'], $valor)->get();
-
-// Funciona também em colunas JSON
-Espelho::query()->searchAny(['dados->nome', 'dados->endereco'], $valor)->get();
-```
-
-```php
-// Considere criar indices nas colunas JSON para melhorar a performance
-DB::statement("CREATE INDEX idx_meu_indice ON minha_tabela USING gin (immutable_unaccent(minha_coluna->>'meu_campo') gin_trgm_ops)");
-```
-
-<br>
-
-# Número
-
-```php
-use TJDFT\Laravel\Support\Numero; 
-
-Numero::percentual('0.2567')        # 25,67%
-Numero::percentual('0.2567', 1)     # 25,6%
-
-Numero::truncado('14.6789')         # 14.67
-Numero::truncado('14.6789', 3)      # 14.678
-
-Numero::formatado('1234.56')        # 1.234,56
-
-Numero::moeda('1234.56')            # R$ 3.201,45
-
-Numero::cpf('12345678901')          # 123.456.789-01
-
-Numero::cnpj('12345678000195')      # 12.345.678-0001/95
-```
-
-<br>
-
-# Data
-
-```php
-use TJDFT\Laravel\Support\Data;
-
-Data::formatada("2025-04-12")     # 12/04/2025
-Data::formatada(null, "-")        # Se for nula mostra "-"
-Data::formatada($carbon, "-")     # Funciona também com objetos Carbon.
-```
-
-<br>
-
-# Paginação
-
-Utilize o trait `WithPaginationAndReset` nas telas com tabelas.  
-Quando os filtros forem alterados, a paginação será resetada automaticamente.
-
-```php
-use TJDFT\Laravel\Traits\WithPaginationAndReset;
-// ...
-
-new class extends Component {
-
-    use WithPaginationAndReset;
-
-    // ...
-}
-```
-
-Limpa propriedades de filtro e resetar paginação.
-
-```html
-<!-- Invoca manualmente o reset de paginação e propriedades de filtro -->
-
-<x-button label="Limpar" wire:click="clear()" />
-```
-
-<br>
-
-# Exceptions
-
-Utilize a classe `AppException` na lógica de negócio para automaticamente exibir um **toast** do **maryUI**.
-
-```php
-use TJDFT\Laravel\Exceptions\AppException;
-// ...
-
-if ($consignacao->status_id === Status::FINALIZADA) {
-    throw new AppException("Este contrato não pode ser alterado.");
-}
-```
-
-<br>
-
-# Ícones
-
-Este pacote inclui um conjunto extra de ícones para utilização nos componentes do **maryUI**.
-
-- https://lucide.dev/icons **(preferencial)**
-- https://heroicons.com
-- https://materialdesignicons.com
-
-```html
-<!-- Hero Icons possuem prefixo "o-" -->
-<x-button label="Salvar" icon="o-check" />
-
-<!-- Lucide Icons possuem prefixo "lucide." -->
-<x-button label="Consulta" icon="lucide.users" />
-
-<!-- MDI Icons possuem prefixo "mdi." -->
-<x-button label="Contato" icon="mdi.whatsapp" />
 ```
 
 <br>
@@ -700,6 +437,205 @@ php artisan migrate:fresh --seed
 
 <br>
 
+# Impersonate
+
+Adicione o trait `HasImpersonate` no model `User`.
+
+```php
+use TJDFT\Laravel\Traits\HasImpersonate;
+// ...
+
+class User extends Authenticatable
+{
+    use HasImpersonate;
+    
+    //...
+}
+```
+
+Utilize a rota `/auth/impersonate` para a funcionalidade de **personificação** de usuários.  
+Funcionalidade disponível apenas para usuários com a permissão `impersonate`.
+
+<!-- @formatter:off -->
+```html
+<x-menu-item title="Personificar" link="/auth/impersonate" :hidden="auth()->user()->cannot('impersonate')" />
+```
+<!-- @formatter:on -->
+
+Adicione no arquivo de layout o aviso de personificação, quando em uso.
+
+```html
+<!-- resources/views/layouts/app.blade.php -->
+
+<body>
+    <!-- Aviso de Impersonate -->
+    <livewire:tjdft::impersonating />
+
+    <div>
+        Menu superior ...
+    </div>
+
+    <div>
+        Conteúdo da página ...
+    </div>
+</body>
+```
+
+<br>
+
+# Pesquisa
+
+Adicione o trait `HasSearchAny` nos models pesquisáveis.
+
+```php
+use TJDFT\Laravel\Traits\HasSearchAny;
+// ...
+
+class Rubrica extends Model
+{
+    use HasSearchAny;
+    
+    //...
+}
+```
+
+```php
+// Pesquisa em múltiplos campos, tratando acentuação e case sensitive automaticamente.
+Rubrica::query()->searchAny(['nome', 'sigla'], $valor)->get();
+
+// Funciona também em colunas JSON
+Espelho::query()->searchAny(['dados->nome', 'dados->endereco'], $valor)->get();
+```
+
+```php
+// Considere criar indices nas colunas JSON para melhorar a performance
+DB::statement("CREATE INDEX idx_meu_indice ON minha_tabela USING gin (immutable_unaccent(minha_coluna->>'meu_campo') gin_trgm_ops)");
+```
+
+<br>
+
+# Exceptions
+
+Utilize a classe `AppException` na lógica de negócio para automaticamente exibir um **toast** do **maryUI**.
+
+```php
+use TJDFT\Laravel\Exceptions\AppException;
+// ...
+
+if ($consignacao->status_id === Status::FINALIZADA) {
+    throw new AppException("Este contrato não pode ser alterado.");
+}
+```
+
+<br>
+
+# Número
+
+```php
+use TJDFT\Laravel\Support\Numero; 
+
+Numero::percentual('0.2567')        # 25,67%
+Numero::percentual('0.2567', 1)     # 25,6%
+
+Numero::truncado('14.6789')         # 14.67
+Numero::truncado('14.6789', 3)      # 14.678
+
+Numero::formatado('1234.56')        # 1.234,56
+
+Numero::moeda('1234.56')            # R$ 3.201,45
+
+Numero::cpf('12345678901')          # 123.456.789-01
+
+Numero::cnpj('12345678000195')      # 12.345.678-0001/95
+```
+
+<br>
+
+# Data
+
+```php
+use TJDFT\Laravel\Support\Data;
+
+Data::formatada("2025-04-12")     # 12/04/2025
+Data::formatada(null, "-")        # Se for nula mostra "-"
+Data::formatada($carbon, "-")     # Funciona também com objetos Carbon.
+```
+
+<br>
+
+# Paginação
+
+Utilize o trait `WithPaginationAndReset` nas telas com tabelas.  
+Quando os filtros forem alterados, a paginação será resetada automaticamente.
+
+```php
+use TJDFT\Laravel\Traits\WithPaginationAndReset;
+// ...
+
+new class extends Component {
+
+    use WithPaginationAndReset;
+
+    // ...
+}
+```
+
+Limpa propriedades de filtro e resetar paginação.
+
+```html
+<!-- Invoca manualmente o reset de paginação e propriedades de filtro -->
+
+<x-button label="Limpar" wire:click="clear()" />
+```
+
+<br>
+
+# Lazy spinner
+
+Para componentes  `lazy` , adicione o trait `HasSpinnerPlaceholder` para exibir um spinner de carregamento enquanto o componente é renderizado.
+
+```html
+<!-- Adicione `lazy` -->
+<livewire:algum-componente lazy />
+```
+
+```php
+# Componente lazy
+
+use TJDFT\Laravel\Traits\HasSpinnerPlaceholder;
+// ...
+
+new class extends Component {
+
+    use HasSpinnerPlaceholder;
+    
+    // ...
+}
+```
+
+<br>
+
+# Ícones
+
+Este pacote inclui um conjunto extra de ícones para utilização nos componentes do **maryUI**.
+
+- https://lucide.dev/icons **(preferencial)**
+- https://heroicons.com
+- https://materialdesignicons.com
+
+```html
+<!-- Hero Icons possuem prefixo "o-" -->
+<x-button label="Salvar" icon="o-check" />
+
+<!-- Lucide Icons possuem prefixo "lucide." -->
+<x-button label="Consulta" icon="lucide.users" />
+
+<!-- MDI Icons possuem prefixo "mdi." -->
+<x-button label="Contato" icon="mdi.whatsapp" />
+```
+
+<br>
+
 # Testes
 
 **EXEMPLO: `login()`**
@@ -843,6 +779,96 @@ return [
     'Afastamento.dataInicio' => '2021-01-01',
     'Afastamento.dataFim' => '2021-01-31',
 ];
+```
+
+<br>
+
+# Sentry
+
+Este pacote possui a integração com o SENTRY para monitoramento de erros.
+
+```php
+# Defina o DSN do Sentry para ativar a integração.
+
+TJDFT_SENTRY_LARAVEL_DSN=
+```
+
+<br>
+
+# SMAX
+
+Este pacote possui a integração com o SMAX (Central de Atendimento).
+
+Em caso de indisponibilidade da API, um e-mail será enviado para os destinatários configurados em `TJDFT_SMAX_FALLBACK_EMAILS`.
+
+```php
+$feedback = [
+    'nome' => auth()->user()->nome,
+    'email' => auth()->user()->email,
+    'login' => auth()->user()->login,
+    'conteudo' => $dados['conteudo'],
+    'url' => request()->header('Referer') ?? url()->previous(),
+];
+
+// Executa em background
+defer(fn() => new SmaxService()->criarRequisicao($feedback));
+```
+
+<br>
+
+# API RH
+
+Este pacote possui a classe base para consultas na API RH.
+
+```php
+class PolvoService { ... }
+```
+
+Crie serviços de consulta baseados na classe `TJDFT\Laravel\Services\PolvoService`.
+
+```php
+namespace App\Services;
+
+use Illuminate\Support\Collection;
+use TJDFT\Laravel\Services\PolvoService;
+
+
+class FeriasPolvoService extends PolvoService
+{
+     public function porMatricula(string $matricula): Collection
+     {
+        $query = "{ ... query GraphQL ... }";
+        
+        // Método herdado da classe PolvoService
+        $response = $this->graphql($query);
+
+        return collect($response['data']['servidor']['dadosFuncionais']['ferias']['data'] ?? []);
+     } 
+}
+```
+
+Todas as consultas GraphQL tem um prazo de cache padrão de **1 hora**.
+
+```bash
+TJDFT_POLVO_CACHE_TTL='1 hour'.   
+```
+
+Pra definir um prazo específico apenas para algumas consultas, utilize o método `lembrar()`.
+
+```php
+$ferias = new FeriasPolvoService()->lembrar('1 day')->porMatricula("12345");
+```
+
+Para desabilitar o cache em consultas específicas, utilize o método `semCache()`.
+
+```php
+$ferias = new FeriasPolvoService()->semCache()->porMatricula("12345");
+```
+
+Para desabilitar completamente o cache tem todas as consultas GraphQL ajuste a variável de ambiente.
+
+```bash
+TJDFT_POLVO_CACHE_TTL='0'
 ```
 
 <br>

@@ -24,13 +24,21 @@ return [
         ]
     ],
 
-    // API RH
-    'polvo' => [
-        'api_url' => env('TJDFT_POLVO_API_URL'),
-        'auth_url' => env('TJDFT_POLVO_AUTH_URL'),
-        'client_id' => env('TJDFT_POLVO_CLIENT_ID'),
-        'client_secret' => env('TJDFT_POLVO_CLIENT_SECRET'),
-        'cache_ttl' => env('TJDFT_POLVO_CACHE_TTL', '1 hour'),
+    // SENTRY
+    'sentry' => [
+        'dsn' => env('TJDFT_SENTRY_LARAVEL_DSN'),
+    ],
+
+    // SMAX
+    'smax' => [
+        'url' => env('TJDFT_SMAX_URL'),
+        'tenant_id' => env('TJDFT_SMAX_TENANT_ID'),
+        'requests_offering' => env('TJDFT_SMAX_REQUESTS_OFFERING'),
+        'auth_login' => env('TJDFT_SMAX_LOGIN'),
+        'auth_password' => env('TJDFT_SMAX_PASSWORD'),
+        'api_url' => env('TJDFT_SMAX_URL') . "/rest/" . env('TJDFT_SMAX_TENANT_ID') . "/ems",
+        'auth_url' => env('TJDFT_SMAX_URL') . '/auth/authentication-endpoint/authenticate/login?TENANTID=' . env('TJDFT_SMAX_TENANT_ID'),
+        'fallback_emails' => env('TJDFT_SMAX_FALLBACK_EMAILS'),
     ],
 
     // KEYCLOAK
@@ -42,14 +50,18 @@ return [
         'realms' => env('TJDFT_KEYCLOAK_REALMS')
     ],
 
-    // SENTRY
-    'sentry' => [
-        'dsn' => env('TJDFT_SENTRY_LARAVEL_DSN'),
+    // API RH
+    'polvo' => [
+        'api_url' => env('TJDFT_POLVO_API_URL'),
+        'auth_url' => env('TJDFT_POLVO_AUTH_URL'),
+        'client_id' => env('TJDFT_POLVO_CLIENT_ID'),
+        'client_secret' => env('TJDFT_POLVO_CLIENT_SECRET'),
+        'cache_ttl' => env('TJDFT_POLVO_CACHE_TTL', '1 hour'),
     ],
 
     // GRAPHQL FAKER
     'graphql_faker' => [
         'schema_path' => env('TJDFT_GRAPHQL_FAKER_SCHEMA_PATH', 'tests/faker.graphql'),
         'schema_path_overrides' => env('TJDFT_GRAPHQL_FAKER_SCHEMA_PATH_OVERRIDES', 'tests/faker.graphql.php'),
-    ]
+    ],
 ];

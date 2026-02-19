@@ -22,8 +22,11 @@ class TJDFTLaravelServiceProvider extends ServiceProvider
         // Configuração
         $this->mergeConfigFrom(__DIR__ . '/../config/tjdft.php', 'tjdft');
 
-        // Views blade
+        // Blade views
         $this->loadViewsFrom(__DIR__ . '/../resources/views/blade', 'tjdft');
+
+        // Mails views
+        $this->loadViewsFrom(__DIR__ . '/../resources/views/mail', 'tjdft');
 
         // Traduções pt-BR
         $this->loadTranslationsFrom(__DIR__ . '/../lang');

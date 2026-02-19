@@ -39,6 +39,7 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
 **Interface:**
 
+- Inclui a biblioteca de componentes **maryUI**.
 - Tela de **erro** padronizada.
 - Pacote extra de **ícones**.
 - Arquivos de **translation** em `pt_BR`.
@@ -733,7 +734,7 @@ $this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
 
 <br>
 
-# Fake graphQL
+# GraphQL Faker
 
 Este pacote expõe o endpoint `/graphql-faker` para simular respostas de APIs graphQL externas.
 
@@ -749,7 +750,6 @@ Este pacote expõe o endpoint `/graphql-faker` para simular respostas de APIs gr
 
 ```shell
 # Pode ser obtido executando este comando no terminal da API RH.
-# Baixe o arquivo e copie o seu conteúdo para `tests/faker.graphql`
 
 php artisan lighthouse:print-schema > schema.graphql
 ```
@@ -785,10 +785,14 @@ return [
 
 # Sentry
 
-Este pacote possui a integração com o SENTRY para monitoramento de erros.
+Este pacote possui a integração com o **SENTRY** para monitoramento de erros.
+
+🚨 Lembre-se de ajustar o arquivo `.env`
 
 ```php
-# Defina o DSN do Sentry para ativar a integração.
+# URL obtida no SENTRY ao configurar o novo projeto.
+# Localmente mantenha a URL em branco.
+# Caso contrário os erros do ambiente de desenvolvimento serão reportados no Sentry.
 
 TJDFT_SENTRY_LARAVEL_DSN=
 ```
@@ -797,21 +801,22 @@ TJDFT_SENTRY_LARAVEL_DSN=
 
 # SMAX
 
-Este pacote possui a integração com o SMAX (Central de Atendimento).
+Este pacote possui a integração com o **SMAX** (Central de Atendimento).
 
 Em caso de indisponibilidade da API, um e-mail será enviado para os destinatários configurados em `TJDFT_SMAX_FALLBACK_EMAILS`.
 
-```php
-$feedback = [
-    'nome' => auth()->user()->nome,
-    'email' => auth()->user()->email,
-    'login' => auth()->user()->login,
-    'conteudo' => $dados['conteudo'],
-    'url' => request()->header('Referer') ?? url()->previous(),
-];
+🚨 Lembre-se de ajustar o arquivo `.env`
 
-// Executa em background
-defer(fn() => new SmaxService()->criarRequisicao($feedback));
+```php
+// Texto
+$conteudo = 'Não consigo acessar a página de comprovantes.';
+
+// A url da página que usuário está visualizando no momento.
+$url = request()->header('Referer') ?? url()->previous(),
+
+
+// O helper do Laravel `defer()` executa a ação em background, imediatamente após resposta do browser.
+defer(fn() => new SmaxService()->criarRequisicao($conteudo, $url));
 ```
 
 <br>
@@ -819,6 +824,8 @@ defer(fn() => new SmaxService()->criarRequisicao($feedback));
 # API RH
 
 Este pacote possui a classe base para consultas na API RH.
+
+🚨 Lembre-se de ajustar o arquivo `.env`
 
 ```php
 class PolvoService { ... }

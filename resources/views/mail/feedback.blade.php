@@ -8,12 +8,17 @@
 
 <br>
 
-# Remetente
+---
 
-- **Nome:** {{ $user->nome }}
-- **Email:** {{ $user->email }}
-- **URL:** {{ $url ?? '-' }}
-- **Data:** {{ now()->format('d/m/Y H:i') }}
+**Nome:** {{ $user->nome }}
+
+**Email:** {{ $user->email }}
+
+**URL:** {{ $url ?? '-' }}
+
+**Data:** {{ now()->format('d/m/Y H:i') }}
+
+---
 
 # Mensagem
 

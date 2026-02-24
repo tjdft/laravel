@@ -880,6 +880,131 @@ TJDFT_POLVO_CACHE_TTL='0'
 
 <br>
 
+# Auditoria
+
+Este pacote possui a integração com o `owen-it/laravel-auditing` para registro de auditoria.
+
+Utilize o trait `Auditavel` e implemente a interface `AuditavelContract` nos models que deseja auditar.
+
+```php
+use Illuminate\Database\Eloquent\Model;
+use TJDFT\Laravel\Contracts\AuditavelContract;
+use TJDFT\Laravel\Traits\Auditavel;
+
+// ...
+
+class Pagina extends Model implements AuditavelContract
+{
+    use Auditavel;
+    
+    // ...
+}
+
+```
+
+Para visualizar os registros de auditoria utilize o componente passando como parametro a instância de um model auditável.
+
+```html
+<!-- Ex: Página de dição da rubrica" -->
+
+<div>
+    <!-- Cabeçalho -->
+    <x-header title="Editar Rubrica" separator>
+        <x-slot:actions>
+            <!-- Histórico de auditoria -->
+            <livewire:tjdft::auditoria :model="$rubrica" />
+
+            <!-- Excluir página -->
+            <x-button label="Excluir" wire:click="excluir" />
+        </x-slot:actions>
+    </x-header>
+
+    <!-- Formulário -->
+    <x-form>
+        ...
+    </x-form>
+</div>
+```
+
+Para renomear os campos exibidos em tela, declare o método de configuração `auditoria()` no model.
+
+```php
+class Pagina extends Model implements AuditavelContract
+{
+    use Auditavel;
+    
+    // ...
+    
+    protected function auditoria(): array
+    {
+        return [
+            'titulo' => 'Título',
+            'conteudo' => 'Conteúdo',        
+        ];
+    }
+}
+```
+
+Para exibir o valor final de relacionamentos declare o campo `transform` indicando o model relacionado.
+
+```php
+use App\Models\TipoPagina;
+
+// ...
+
+// A coluna `tipo_id` é a FK
+public function tipo(): BelongsTo
+{    
+    return $this->belongsTo(TipoPagina::class);
+}
+
+protected function auditoria(): array
+{
+    return [
+        'titulo' => 'Título',
+        'conteudo' => 'Conteúdo',
+        'tipo_id' => [
+            'nome' => 'Tipo da Pagina',
+            'transform' => TipoPagina::class,  // Exibe o valor do campo `nome` do model TipoPagina
+        ],  
+    ];
+}
+```
+
+Quando colunas `JSON` são auditadas, utilize o plugin `Diff2HTML` para exibir automaticamente as diferenças de maneira amigável.
+
+```html
+<!-- /resources/views/layouts/app.blade -->
+
+<html>
+<head>
+    ...
+
+    <!-- Diff2HTML -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/xcode.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/diff2html@3.4.48/bundles/css/diff2html.min.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diff2html@3.4.48/bundles/js/diff2html-ui.min.js"></script>
+</head>
+```
+
+Caso não queira exibir o `JSON` completo, é possível configurar para exibir apenas campos específicos.
+
+```php
+protected function auditoria(): array
+{
+    return [
+        'titulo' => 'Título',
+        'conteudo' => 'Conteúdo',  
+        'unidade_responsavel' => [ 
+            'nome' => 'Unidade Responsável',
+            'campos' => ['sigla', 'codigo'],    // Não é necessário usar `Diff2HTML`
+        ],
+    ];
+}
+```
+
+<br>
+
 # Desenvolvimento local
 
 Execute o clone na raiz da sua aplicação.

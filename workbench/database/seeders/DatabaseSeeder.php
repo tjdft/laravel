@@ -15,6 +15,5 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // UserFactory::new()->times(10)->create();
-        
     }
 }

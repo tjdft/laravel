@@ -4,7 +4,10 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Livewire\Component;
+use TJDFT\Laravel\Models\Permission;
+use TJDFT\Laravel\Models\Role;
 use TJDFT\Laravel\Traits\WithPaginationAndReset;
 
 new class extends Component {
@@ -12,6 +15,12 @@ new class extends Component {
 
     // Busca por nome ou matrícula
     public string $search = '';
+
+    public ?string $role_id = null;
+
+    public ?string $permission_id = null;
+
+    public bool $filtros = false;
 
     public function mount(): void
     {
@@ -28,10 +37,22 @@ new class extends Component {
             ->with('grant')
             ->when(is_numeric($this->search), fn(Builder $query) => $query->where('matricula', $this->search))
             ->when(! is_numeric($this->search), fn(Builder $query) => $query->searchAny(['nome'], $this->search))
+            ->when($this->role_id, fn(Builder $query) => $query->whereRelation('grant', 'roles', 'like', "%{$this->role_id}%"))
+            ->when($this->permission_id, fn(Builder $query) => $query->whereRelation('grant', 'permissions', 'like', "%{$this->permission_id}%"))
+            ->orderBy('nome')
             ->paginate();
     }
 
-    // Cabeçalhos da tabela
+    public function permissions(): Collection
+    {
+        return Permission::orderBy('description')->get();
+    }
+
+    public function roles(): Collection
+    {
+        return Role::orderBy('description')->get();
+    }
+
     public function headers(): array
     {
         return [
@@ -53,6 +74,8 @@ new class extends Component {
             'users' => $this->users(),
             'headers' => $this->headers(),
             'breadcrumbs' => $this->breadcrumbs(),
+            'roles' => $this->roles(),
+            'permissions' => $this->permissions(),
         ];
     }
 }; ?>
@@ -65,6 +88,8 @@ new class extends Component {
         </x-slot:subtitle>
         <x-slot:actions>
             <x-input placeholder="Nome ou matrícula ..." wire:model.live.debounce="search" icon="lucide.search" clearable />
+            <div class="divider divider-horizontal mx-0"></div>
+            <x-button icon="lucide.filter" wire:click="$toggle('filtros')" />
         </x-slot:actions>
     </x-header>
 
@@ -88,6 +113,20 @@ new class extends Component {
             @endscope
         </x-table>
     </x-card>
+
+    {{--  FILTROS  --}}
+    <x-drawer title="Filros" wire:model="filtros" separator with-close-button right class="w-6/12">
+        <div class="grid gap-5">
+            <x-input label="Pessoa" placeholder="Nome ou matrícula ..." wire:model.live.debounce="search" icon="lucide.search" clearable />
+            <x-select label="Role" wire:model.live="role_id" :options="$roles" option-value="name" option-label="description" placeholder="Selecione" />
+            <x-select label="Permission" wire:model.live="permission_id" :options="$permissions" option-value="name" option-label="description" placeholder="Selecione" />
+        </div>
+
+        <x-slot:actions>
+            <x-button label="Limpar" wire:click="clear" spinner />
+            <x-button label="Pronto" @click="$wire.filtros = false" icon="lucide.check" class="btn-primary" />
+        </x-slot:actions>
+    </x-drawer>
 </div>
 
 <style>

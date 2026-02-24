@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\LivewireServiceProvider;
 use Mary\MaryServiceProvider;
 use Orchestra\Testbench\Concerns\WithWorkbench;
+use OwenIt\Auditing\AuditingServiceProvider;
 use SocialiteProviders\Manager\ServiceProvider as SocialiteKeycloakServiceProvider;
 use Technikermathe\LucideIcons\BladeLucideIconsServiceProvider;
 use TJDFT\Laravel\TJDFTLaravelServiceProvider;
@@ -39,6 +40,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
             BladeLucideIconsServiceProvider::class,
             MaryServiceProvider::class,
             SocialiteKeycloakServiceProvider::class,
+            AuditingServiceProvider::class,
             TJDFTLaravelServiceProvider::class,
         ];
     }
@@ -71,6 +73,9 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         // GraphQL Faker
         config()->set('tjdft.graphql_faker.schema_path', '/../../../../../laravel/workbench/tests/faker.graphql');
         config()->set('tjdft.graphql_faker.schema_path_overrides', '/../../../../../laravel/workbench/tests/faker.graphql.php');
+
+        // Auditoria
+        config()->set('audit.console', true);
 
         // Namespace de views para `layouts` do Livewire
         $app['view']->addNamespace('layouts', workbench_path('resources/views/layouts'));

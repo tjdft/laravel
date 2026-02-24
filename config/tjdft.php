@@ -64,4 +64,9 @@ return [
         'schema_path' => env('TJDFT_GRAPHQL_FAKER_SCHEMA_PATH', 'tests/faker.graphql'),
         'schema_path_overrides' => env('TJDFT_GRAPHQL_FAKER_SCHEMA_PATH_OVERRIDES', 'tests/faker.graphql.php'),
     ],
+
+    // AUDITORIA
+    'auditoria' => [
+        'maximxo_exibicao' => env('TJDFT_AUDITORIA_MAXIMO_EXIBICAO', 20),
+    ]
 ];

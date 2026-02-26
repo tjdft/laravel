@@ -10,6 +10,8 @@ new class extends Component {
 
     public Model $model;
 
+    public ?string $class = null;
+
     public function auditorias(): Collection
     {
         return $this->model->auditorias();
@@ -24,7 +26,7 @@ new class extends Component {
 };
 ?>
 
-<div {{ $attributes->class([]) }}>
+<div @class([$class])>
     <x-button label="Auditoria" wire:click="$toggle('show')" icon="lucide.activity" class="btn-outline btn-primary" responsive />
 
     <x-drawer wire:model="show" title="Auditoria" right separator close-on-escape with-close-button class="w-11/12">

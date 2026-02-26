@@ -25,6 +25,10 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 - Gerenciamento de **Permissões**.
 - Funcionalidade de **Impersonate**.
 
+**Auditoria:**
+
+- Mecanismo de auditoria de models.
+
 **Integração com o RH:**
 
 - Classe base para consulta na **API RH**.

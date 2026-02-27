@@ -65,7 +65,7 @@ new class extends Component {
             </div>
         </div>
         <div class="col-span-12 lg:col-span-8">
-            <img src="/imagens/senhas.png?v=2" class="mx-auto w-full max-w-96" aria-label="Pessoa observando algumas bandeiras." />
+            <img src="/impersonate.png?v=2" class="mx-auto w-full max-w-96" aria-label="Pessoa observando algumas bandeiras." />
         </div>
     </div>
 </div>

@@ -14,6 +14,11 @@ Route::middleware('web')->group(function () {
     Route::get('/user.png', function () {
         return response()->file(__DIR__ . '/../public/user.png')->setCache(['max_age' => 86400, 'public' => true]);
     });
+
+    // Imagem Impersonate
+    Route::get('/impersonate.png', function () {
+        return response()->file(__DIR__ . '/../public/impersonate.png')->setCache(['max_age' => 86400, 'public' => true]);
+    });
 });
 
 Route::middleware(['web', 'auth'])->group(function () {

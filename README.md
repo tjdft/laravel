@@ -819,8 +819,8 @@ $conteudo = 'Não consigo acessar a página de comprovantes.';
 $url = request()->header('Referer') ?? url()->previous(),
 
 
-// O helper do Laravel `defer()` executa a ação em background, imediatamente após resposta do browser.
-defer(fn() => new SmaxService()->criarRequisicao($conteudo, $url));
+// Cria a requisição
+new SmaxService()->criarRequisicao($conteudo, $url);
 ```
 
 <br>

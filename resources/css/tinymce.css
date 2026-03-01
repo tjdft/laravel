@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+
+/* dasyUI */
+@plugin "daisyui" {
+    themes: light --default, dark --prefersdark;
+}
+
+/* Theme toggle */
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+/* Custom light theme primary color  */
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    --color-primary: oklch(0.5529 0.1505 248.81);
+}
+
+/* Custom dark theme primary color  */
+@plugin "daisyui/theme" {
+    name: "dark";
+    --color-primary: oklch(0.5529 0.1505 248.81);
+}
+
+/********************************************
+ Estilo do editor para combinar com o tema do site
+ Veja `.pagina` em `tjdft.css`
+*********************************************/
+
+body {
+    @apply bg-inherit text-[0.95rem] text-base-content/70
+}
+
+h3 {
+    @apply text-lg font-bold not-first:mt-8
+}
+
+h3::before, h2::before {
+    content: '#';
+    @apply text-primary/50 mr-2
+}
+
+a {
+    @apply text-primary hover:underline
+}
+
+p {
+    @apply my-5 leading-6 pl-5
+}
+
+
+img {
+    @apply inline
+}
+
+a img {
+    @apply inline mb-5
+}
+
+blockquote {
+    @apply border-l-4 border-l-base-300 px-4 italic m-5 py-1 bg-base-200/50 shadow-xs
+}

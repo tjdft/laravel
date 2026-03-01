@@ -1,0 +1,132 @@
+/********************************************
+* TJDFT / LARAVEL
+*********************************************/
+
+/* Views do pacote */
+@source "../**/*.blade.php";
+
+/* dasyUI */
+@plugin "daisyui" {
+    themes: light --default, dark --prefersdark;
+}
+
+/* maryUI */
+@source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
+
+/* Theme toggle */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Custom light theme primary color  */
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    --color-primary: oklch(0.5529 0.1505 248.81);
+}
+
+/* Custom dark theme primary color  */
+@plugin "daisyui/theme" {
+    name: "dark";
+    --color-primary: oklch(0.5529 0.1505 248.81);
+}
+
+/* Pagination */
+.mary-table-pagination {
+    button, span {
+        @apply text-xs border-none
+    }
+
+    button {
+        @apply cursor-pointer
+    }
+
+    span[aria-current="page"] > span {
+        @apply bg-base-content/5
+    }
+
+    button, span[aria-current="page"] > span, span[aria-disabled="true"] span {
+        @apply py-1 px-2
+    }
+}
+
+/********************************************
+Geral
+*********************************************/
+hr {
+    @apply border-t border-t-base-content/10
+}
+
+em {
+    @apply bg-warning/15 not-italic
+}
+
+/********************************************
+ Tabelas
+*********************************************/
+.arrows td:last-child {
+    @apply relative pr-8;
+}
+
+.arrows td:last-child:after {
+    content: '›';
+    @apply text-gray-300 text-2xl absolute right-2 top-1/2 transform -translate-y-1/2;
+}
+
+/********************************************
+ Calendário
+*********************************************/
+.vc,
+.vc-date__btn {
+    @apply !bg-transparent
+}
+
+.vc-date__btn_today {
+    @apply border-2 border-base-content border-dotted !text-base-content
+}
+
+/********************************************
+ Páginas
+*********************************************/
+.pagina {
+    @apply text-[0.95rem] text-base-content/70
+}
+
+.pagina h3 {
+    @apply text-lg font-bold not-first:mt-8
+}
+
+.pagina h3::before, .pagina h2::before {
+    content: '#';
+    @apply text-primary/50 mr-2
+}
+
+.pagina a {
+    @apply text-primary hover:underline
+}
+
+.pagina p {
+    @apply my-5 leading-6 pl-5
+}
+
+.pagina ul:not(.steps) li {
+    @apply list-disc ml-10 pb-3 first:mt-5
+}
+
+.pagina ol {
+    @apply list-decimal;
+}
+
+.pagina ol li {
+    @apply list-item ml-10 pb-5 first:mt-5;
+}
+
+.pagina img {
+    @apply inline
+}
+
+.pagina a img {
+    @apply inline mb-5
+}
+
+.pagina blockquote {
+    @apply border-l-4 border-l-base-300 px-4 italic m-5 py-1 bg-base-200/50 shadow-xs
+}

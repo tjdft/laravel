@@ -128,20 +128,3 @@ new class extends Component {
         </x-slot:actions>
     </x-drawer>
 </div>
-
-<style>
-    .arrow-symbol td:last-child {
-        position: relative;
-        padding-right: 1.5rem;
-    }
-
-    .arrow-symbol td:last-child::after {
-        content: '›';
-        color: rgb(209 213 219);
-        font-size: 1.5rem;
-        position: absolute;
-        right: 0.5rem;
-        top: 50%;
-        transform: translateY(-50%);
-    }
-</style>

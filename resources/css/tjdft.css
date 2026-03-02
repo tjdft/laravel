@@ -5,13 +5,14 @@
 /* Views do pacote */
 @source "../**/*.blade.php";
 
+/* maryUI */
+@source "../../../../robsontenorio/mary/src/View/Components/**/*.php";
+
 /* dasyUI */
 @plugin "daisyui" {
     themes: light --default, dark --prefersdark;
 }
 
-/* maryUI */
-@source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
 
 /* Theme toggle */
 @custom-variant dark (&:where(.dark, .dark *));

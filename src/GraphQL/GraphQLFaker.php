@@ -141,7 +141,14 @@ class GraphQLFaker
         }
 
         if ($type instanceof ListTypeNode) {
-            return collect(range(1, rand(1, 2)))
+            $paginator = str($path)->before('.data')->append('.size')->toString();
+            $size = rand(1, 2);
+
+            if (array_key_exists($paginator, $this->fieldOverrides)) {
+                $size = $this->fieldOverrides[$paginator];
+            }
+
+            return collect(range(1, $size))
                 ->map(fn() => $this->fakeType($type->type, $path, $selectionSet))
                 ->all();
         }

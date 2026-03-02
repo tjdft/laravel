@@ -102,7 +102,7 @@ new class extends Component {
             link="/auth/permissions/{id}"
             show-empty-text
             empty-text="Nenhum resultado encontrado."
-            class="arrow-symbol"
+            class="arrows"
         >
             @scope('cell_nome', $user)
             <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/user.png" no-separator no-hover class="!-mx-5 !py-0">

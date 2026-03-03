@@ -338,9 +338,8 @@ use TJDFT\Laravel\Models\Role;
 class PermissionsSeeder extends Seeder
 {
     public function run(): void
-    {
-        // Permissão inicial criada pelo pacote
-        if (Permission::where('name', '<>', 'permissoes.gerenciar')->count()) {
+    {     
+        if (Permission::where('name', 'comprovante.processar')->count()) {
             return;
         }
         

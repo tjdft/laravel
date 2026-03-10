@@ -13,13 +13,13 @@ use OwenIt\Auditing\AuditingServiceProvider;
 use SocialiteProviders\Manager\ServiceProvider as SocialiteKeycloakServiceProvider;
 use Technikermathe\LucideIcons\BladeLucideIconsServiceProvider;
 use TJDFT\Laravel\TJDFTLaravelServiceProvider;
-use TJDFT\Laravel\Traits\TestUtis;
+use TJDFT\Laravel\Traits\TestUtils;
 use Workbench\App\Actions\AtualizarPermissionsLoginAction;
 use function Orchestra\Testbench\workbench_path;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
 {
-    use WithWorkbench, TestUtis;
+    use WithWorkbench, TestUtils;
 
     protected function boot(): void
     {

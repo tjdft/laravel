@@ -116,12 +116,12 @@ Ajuste  `tests/TestCase.php`.
 
 ```php
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use TJDFT\Laravel\Traits\TestUtis;
+use TJDFT\Laravel\Traits\TestUtils;
 
 abstract class TestCase extends BaseTestCase
 {
     // Helpers para testes automatizados
-    use TestUtis;
+    use TestUtils;
     
     // Equivale ao `setUp()` do PHPUnit
     protected function boot(): void

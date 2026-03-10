@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use TJDFT\Laravel\Services\PolvoService;
 
-trait TestUtis
+trait TestUtils
 {
     use LazilyRefreshDatabase;
 

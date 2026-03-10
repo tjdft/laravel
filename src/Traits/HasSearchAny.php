@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 trait HasSearchAny
 {
     #[Scope]
-    public function searchAny(Builder $query, array $columns, string $value): Builder
+    protected function searchAny(Builder $query, array $columns, string $value): Builder
     {
         return $query->where(function (Builder $query) use ($columns, $value) {
             $schema = config('tjdft.pgsql_extensions.schema');

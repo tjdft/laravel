@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use TJDFT\Laravel\Casts\CompetenciaCast;
+use TJDFT\Laravel\Casts\NumeroCast;
 use TJDFT\Laravel\Contracts\AuditavelContract;
 use TJDFT\Laravel\Traits\Auditavel;
 use TJDFT\Laravel\Traits\HasGrant;
@@ -33,6 +35,8 @@ class User extends Authenticatable implements AuditavelContract
     {
         return [
             'email_verified_at' => 'datetime',
+            'cpf' => NumeroCast::class,
+            'competencia' => CompetenciaCast::class,
             'password' => 'hashed',
             'localizacao' => 'object',
         ];

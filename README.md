@@ -549,7 +549,6 @@ Numero::formatado('1234.56')        # 1.234,56
 Numero::moeda('1234.56')            # R$ 3.201,45
 
 Numero::cpf('12345678901')          # 123.456.789-01
-
 Numero::cnpj('12345678000195')      # 12.345.678-0001/95
 ```
 
@@ -567,29 +566,14 @@ Data::formatada($carbon, "-")     # Funciona também com objetos Carbon.
 
 <br>
 
-# Paginação
-
-Utilize o trait `WithPaginationAndReset` nas telas com tabelas.  
-Quando os filtros forem alterados, a paginação será resetada automaticamente.
+# Telefone
 
 ```php
-use TJDFT\Laravel\Traits\WithPaginationAndReset;
-// ...
+use TJDFT\Laravel\Support\Telefone;
 
-new class extends Component {
-
-    use WithPaginationAndReset;
-
-    // ...
-}
-```
-
-Limpa propriedades de filtro e resetar paginação.
-
-```html
-<!-- Invoca manualmente o reset de paginação e propriedades de filtro -->
-
-<x-button label="Limpar" wire:click="clear()" />
+Telefone::formatado('11987654321')   # (11) 98765-4321
+Telefone::formatado('987654321')     # 98765-4321
+Telefone::formatado(null, "-")       # Se for nulo mostra "-"
 ```
 
 <br>
@@ -640,148 +624,72 @@ Este pacote inclui um conjunto extra de ícones para utilização nos componente
 
 <br>
 
-# Testes
+# Casts
 
-**EXEMPLO: `login()`**
-
-```php
-// Cria e autentica um usuário aleatoriamente
-$this->login();
-
-// Cria e autentica um usuário com permissão específica
-$this->login(permission: 'comprovante.visualizar');
-
-// Cria e autentica um usuário com múltiplas permissões
-$this->login(permission: ['comprovante.visualizar', 'comprovante.gerenciar']);
-
-// Autentica um usuário existente
-$user = User::factory()->create();
-$this->login($user);
-```
-
-**EXEMPLO: `login()`**
+Casts personalizados para formatação de atributos em models Eloquent.
 
 ```php
-test('Usuários autenticados podem ver páginas secretas', function () {        
+use TJDFT\Laravel\Casts\NumeroCast;
+use TJDFT\Laravel\Casts\CompetenciaCast;
+// ...
 
-     // Dado que eu estou logado
-     // Então eu consigo ver a página
-     $this->get('/pagina-secreta')->assertOk();
+class Estagiario extends Model
+{
+    // ...
 
-    // Não é necessário usar `$this->login()`
-    // Pois o `TestCase` já faz isso automaticamente antes de cada teste.
-});
-```
-
-**EXEMPLO: `login()`**
-
-```php
-test('Teste permissão', function () {
-
-    // Dado que eu tenho permissão básica
-    $this->login(permission: 'paginas.visualizar');
-    
-    // Quando eu tentar editar a página, então verei um erro de acesso negado
-    $this->get('/paginas/99/edit')->assertForbiden();
-    
-    // Dado que eu tenho permissão de gestão
-    $this->login(permission: 'paginas.gerenciar');
-    
-    // Quando eu tentar editar a página, então eu consigo ver a página
-    $this->get('/paginas/99/edit')->assertOk();
-});
-```
-
-**EXEMPLO: `logout()`**
-
-```php
-test('Visitantes não podem ver páginas secretas.', function () {         
-
-    // Dado que eu não estava logado
-    $this->logout();
-
-    // Quando eu tentar acessar uma rota protegida
-    // Então sou redirecionado para a página de login
-    $this->get('/pagina-secreta')->assertRedirect('/login');
-});
-```
-
-**EXEMPLO: `assertPolvoQueryContains()`**
-
-```php
-test('Consulta movimentações', function () {
-
-    // Quando eu definir o período e consultar
-    Livewire::test('pages::movimentacoes')
-        ->set('data_inicio', '2020-07-20')
-        ->set('data_fim', '2020-07-22')
-        ->call('consultar');
-
-    // Então a query GraphQL que foi executada pelo PolvoService deve conter o período correto
-    $this->assertPolvoQueryContains('
-            movimentacoes(
-                periodo: {dataInicio: "2020-07-20" dataFim: "2020-07-22"}                
-    ');
-});
-````
-
-**EXEMPLO: `assertPolvoQueryNotContains()`**
-
-```php
-// Dado que eu estou visualizando a unidade `12345`
-$this->get('/unidades/12345');
-
-// Então query GraphQL que foi executada pelo PolvoService NÃO contém um trecho esperado
-$this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
-````
+    protected function casts(): array 
+    {
+        return [
+            'cpf' => NumeroCast::class,            # Unidirecional: Remove formatação e grava apenas números.
+            'semestre' => CompetenciaCast::class   # Bidirecional: Grava no formato `anomes` e recupera um `Carbon`. 
+        ];
+    }
+}
+``` 
 
 <br>
 
-# GraphQL Faker
+# Paginação
 
-Este pacote expõe o endpoint `/graphql-faker` para simular respostas de APIs graphQL externas.
-
-1. Ajuste `phpunit.xml`.
-
-<!-- @formatter:off -->
-```xml
-<env name="TJDFT_POLVO_API_URL" value="http://localhost:8080/graphql-faker"/>
-```
-<!-- @formatter:on -->
-
-2. Obtenha o schema **SDL** original da API RH e salve como `tests/faker.graphql`.
-
-```shell
-# Pode ser obtido executando este comando no terminal da API RH.
-
-php artisan lighthouse:print-schema > schema.graphql
-```
-
-3. Crie o arquivo `tests/faker.graphql.php`
+Utilize o trait `WithPaginationAndReset` nas telas com tabelas.  
+Quando os filtros forem alterados, a paginação será resetada automaticamente.
 
 ```php
-<?php
+use TJDFT\Laravel\Traits\WithPaginationAndReset;
+// ...
 
-use Faker\Factory;
+new class extends Component {
 
-$faker = Factory::create();
+    use WithPaginationAndReset;
 
-/*
- * Sobrescreve valores aleatórios do faker graphQL para casos específicos.
- *
- */
+    // ...
+}
+```
 
-/**
- * EXEMPLO:
- * 
- * Em algumas situações, é necessário que determinados campos tenham valores conhecidos ou "datas de início e fim" coerentes, para validação de regras.
- * Pois, caso contrário, os testes podem falhar de maneira intermitente.
- */
-return [
-    'CapacitacaoParticipante.aprovado' => true,
-    'Afastamento.dataInicio' => '2021-01-01',
-    'Afastamento.dataFim' => '2021-01-31',
-];
+Limpa propriedades de filtro e resetar paginação.
+
+```html
+<!-- Invoca manualmente o reset de paginação e propriedades de filtro -->
+
+<x-button label="Limpar" wire:click="clear()" />
+```
+
+<br>
+
+# Validação (pt-BR)
+
+As principais mensagens de validação estão traduzidas para o português brasileiro.
+
+Este pacote também inclui validações adicionais para formatos comuns em sistemas brasileiros via  `LaravelLegends/pt-br-validator`.
+
+```php
+// Verifica se é um número de CPF válido
+#[Validate('required|cpf')]
+public ?string $cpf = null;
+
+// Valida se é num formato válido de CEP
+#[Validate('nullable|formato_cep')]
+public ?string $cep = null;
 ```
 
 <br>
@@ -1004,6 +912,152 @@ protected function auditoria(): array
         ],
     ];
 }
+```
+
+<br>
+
+# Testes
+
+**EXEMPLO: `login()`**
+
+```php
+// Cria e autentica um usuário aleatoriamente
+$this->login();
+
+// Cria e autentica um usuário com permissão específica
+$this->login(permission: 'comprovante.visualizar');
+
+// Cria e autentica um usuário com múltiplas permissões
+$this->login(permission: ['comprovante.visualizar', 'comprovante.gerenciar']);
+
+// Autentica um usuário existente
+$user = User::factory()->create();
+$this->login($user);
+```
+
+**EXEMPLO: `login()`**
+
+```php
+test('Usuários autenticados podem ver páginas secretas', function () {        
+
+     // Dado que eu estou logado
+     // Então eu consigo ver a página
+     $this->get('/pagina-secreta')->assertOk();
+
+    // Não é necessário usar `$this->login()`
+    // Pois o `TestCase` já faz isso automaticamente antes de cada teste.
+});
+```
+
+**EXEMPLO: `login()`**
+
+```php
+test('Teste permissão', function () {
+
+    // Dado que eu tenho permissão básica
+    $this->login(permission: 'paginas.visualizar');
+    
+    // Quando eu tentar editar a página, então verei um erro de acesso negado
+    $this->get('/paginas/99/edit')->assertForbiden();
+    
+    // Dado que eu tenho permissão de gestão
+    $this->login(permission: 'paginas.gerenciar');
+    
+    // Quando eu tentar editar a página, então eu consigo ver a página
+    $this->get('/paginas/99/edit')->assertOk();
+});
+```
+
+**EXEMPLO: `logout()`**
+
+```php
+test('Visitantes não podem ver páginas secretas.', function () {         
+
+    // Dado que eu não estava logado
+    $this->logout();
+
+    // Quando eu tentar acessar uma rota protegida
+    // Então sou redirecionado para a página de login
+    $this->get('/pagina-secreta')->assertRedirect('/login');
+});
+```
+
+**EXEMPLO: `assertPolvoQueryContains()`**
+
+```php
+test('Consulta movimentações', function () {
+
+    // Quando eu definir o período e consultar
+    Livewire::test('pages::movimentacoes')
+        ->set('data_inicio', '2020-07-20')
+        ->set('data_fim', '2020-07-22')
+        ->call('consultar');
+
+    // Então a query GraphQL que foi executada pelo PolvoService deve conter o período correto
+    $this->assertPolvoQueryContains('
+            movimentacoes(
+                periodo: {dataInicio: "2020-07-20" dataFim: "2020-07-22"}                
+    ');
+});
+````
+
+**EXEMPLO: `assertPolvoQueryNotContains()`**
+
+```php
+// Dado que eu estou visualizando a unidade `12345`
+$this->get('/unidades/12345');
+
+// Então query GraphQL que foi executada pelo PolvoService NÃO contém um trecho esperado
+$this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
+````
+
+<br>
+
+# GraphQL Faker
+
+Este pacote expõe o endpoint `/graphql-faker` para simular respostas de APIs graphQL externas.
+
+1. Ajuste `phpunit.xml`.
+
+<!-- @formatter:off -->
+```xml
+<env name="TJDFT_POLVO_API_URL" value="http://localhost:8080/graphql-faker"/>
+```
+<!-- @formatter:on -->
+
+2. Obtenha o schema **SDL** original da API RH e salve como `tests/faker.graphql`.
+
+```shell
+# Pode ser obtido executando este comando no terminal da API RH.
+
+php artisan lighthouse:print-schema > schema.graphql
+```
+
+3. Crie o arquivo `tests/faker.graphql.php`
+
+```php
+<?php
+
+use Faker\Factory;
+
+$faker = Factory::create();
+
+/*
+ * Sobrescreve valores aleatórios do faker graphQL para casos específicos.
+ *
+ */
+
+/**
+ * EXEMPLO:
+ * 
+ * Em algumas situações, é necessário que determinados campos tenham valores conhecidos ou "datas de início e fim" coerentes, para validação de regras.
+ * Pois, caso contrário, os testes podem falhar de maneira intermitente.
+ */
+return [
+    'CapacitacaoParticipante.aprovado' => true,
+    'Afastamento.dataInicio' => '2021-01-01',
+    'Afastamento.dataFim' => '2021-01-31',
+];
 ```
 
 <br>

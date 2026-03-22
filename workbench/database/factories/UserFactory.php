@@ -41,6 +41,7 @@ class UserFactory extends Factory
             'foto' => $this->faker->imageUrl,
             'rh_tipo' => $this->faker->randomElement(['MAGISTRADO', 'SERVIDOR']),
             'rh_status' => $this->faker->randomElement(['ATIVO', 'INATIVO']),
+            'competencia' => null,
             'localizacao' => [
                 'id' => 1,
                 'codigo' => '10002000300',

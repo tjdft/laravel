@@ -85,6 +85,26 @@ em {
 }
 
 /********************************************
+ FLatpickr
+*********************************************/
+
+.flatpickr-weekday:nth-child(7n + 6), /* sábado */
+.flatpickr-weekday:nth-child(7n + 7), /* domingo */
+.flatpickr-day:nth-child(7n + 6), /* sábado */
+.flatpickr-day:nth-child(7n + 7) /* domingo */
+{
+    @apply text-error!;
+}
+
+.flatpickr-day:hover, .flatpickr-day.selected {
+    @apply text-base-100!
+}
+
+.flatpickr-day.today, .flatpickr-day.prevMonthDay:hover, .flatpickr-day.nextMonthDay:hover {
+    @apply bg-transparent!
+}
+
+/********************************************
  Páginas
 *********************************************/
 .pagina {

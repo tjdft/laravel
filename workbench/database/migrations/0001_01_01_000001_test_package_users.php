@@ -37,6 +37,7 @@ return new class extends Migration {
             $table->string('rh_tipo')->nullable();
             $table->string('rh_status')->nullable();
             $table->boolean('ativo')->default(true);
+            $table->integer('competencia')->nullable();
 
             $table->unique(['cpf', 'matricula']);
             $table->index(['cpf', 'matricula']);

@@ -115,6 +115,10 @@ em {
     @apply text-lg font-bold not-first:mt-8
 }
 
+.pagina h2 {
+    @apply text-base font-bold not-first:mt-8
+}
+
 .pagina h3::before, .pagina h2::before {
     content: '#';
     @apply text-primary/50 mr-2

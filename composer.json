@@ -27,13 +27,13 @@
         "sentry/sentry-laravel": "^4.20",
         "robsontenorio/mary": "^2.8",
         "livewire/livewire": "^4.2",
-        "webonyx/graphql-php": "^15.30",
+        "webonyx/graphql-php": "^15.32",
         "fakerphp/faker": "^1.24",
         "owen-it/laravel-auditing": "^14.0",
         "laravellegends/pt-br-validator": "^12.2"
     },
     "require-dev": {
-        "orchestra/testbench": "^10.9",
+        "orchestra/testbench": "^10.11",
         "pestphp/pest": "^4.4"
     },
     "autoload-dev": {

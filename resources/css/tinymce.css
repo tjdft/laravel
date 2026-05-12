@@ -35,6 +35,10 @@ h3 {
     @apply text-lg font-bold not-first:mt-8
 }
 
+h2 {
+    @apply text-base font-bold not-first:mt-8
+}
+
 h3::before, h2::before {
     content: '#';
     @apply text-primary/50 mr-2
@@ -59,4 +63,16 @@ a img {
 
 blockquote {
     @apply border-l-4 border-l-base-300 px-4 italic m-5 py-1 bg-base-200/50 shadow-xs
+}
+
+ul:not(.steps) li {
+    @apply list-disc ml-10 pb-3 first:mt-5
+}
+
+ol {
+    @apply list-decimal;
+}
+
+ol li {
+    @apply list-item ml-10 pb-5 first:mt-5;
 }

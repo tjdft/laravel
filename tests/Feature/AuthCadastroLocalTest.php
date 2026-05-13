@@ -151,10 +151,7 @@ test('Atualiza localmente os dados do usuário depois do login', function () {
         ->and(json_encode($mariaLocal->localizacao))->toBe(json_encode($this->mariaPolvo['localizacao']));
 });
 
-test('Usuários que não estão na API RH', function () {
-    // Desliga o tratamento de exceções
-    $this->withoutExceptionHandling();
-
+test('Usuários que não estão na API RH tem seu cadastro criado usando CPF', function () {
     // Dado que eu não estava logado
     $this->logout();
 
@@ -162,9 +159,15 @@ test('Usuários que não estão na API RH', function () {
     $this->retornoVazio = true;
 
     // Quando eu fizer login no keycloack
-    // Então deve ser lançada uma exceção de autorização
     $this->get('/auth/callback/keycloak');
-})->throws(AuthorizationException::class, 'O CPF (123456789) não está cadastrado ou não possui acesso nesta aplicação.');
+
+    $mariaLocal = User::where('uuid', $this->mariaKeycloak['uuid'])->first();
+
+    // Então será criado um usuário com matrícula igual ao próprio CPF
+    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak['uuid'])
+        ->and($mariaLocal->cpf)->toBe($this->mariaKeycloak['cpf'])
+        ->and($mariaLocal->matricula)->toBe($this->mariaKeycloak['cpf']);
+});
 
 test('Redireciona para `/auth/perfil` quando há múltiplos vínculos com o RH', function () {
     // Dado que eu não estava logado

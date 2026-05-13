@@ -58,6 +58,14 @@ class KeycloakController
             // Obtém dados do POLVO APU RH
             $pessoas = new PessoasPolvoService()->porCpf($cpf);
 
+            // Usuários externos que não possuem cadastro no RH, portanto cria-se o usuário aqui (Ex: terceirizados)
+            if ($pessoas->count() == 0) {
+                $pessoas->push([
+                    'cpf' => $cpf,
+                    'matricula' => $cpf,
+                ]);
+            }
+
             /** @var Model $model */
             $model = config('auth.providers.users.model');
 

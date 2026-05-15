@@ -51,6 +51,10 @@ class KeycloakController
             // CPF do usuário no Keycloak
             $cpf = $keycloakUser->attributes['cpf'] ?? $keycloakUser->user['cpf'] ?? $keycloakUser->user['cpf'][0] ?? null;
 
+            // Matrícula do usuário no Keycloak
+            // Nota: o attribute "matricula" no keycloak possui uma letra, mas não deveria. Ex: t318998
+            $matricula = $keycloakUser->attributes['matricula'] ?? $keycloakUser->user['matricula'] ?? $keycloakUser->user['matricula'][0] ?? null;
+
             if (! $cpf) {
                 throw new LogicException('Usuário não possui CPF cadastrado no Keycloak.');
             }
@@ -58,8 +62,10 @@ class KeycloakController
             // Obtém dados do POLVO APU RH
             $pessoas = new PessoasPolvoService()->porCpf($cpf);
 
-            // Usuários externos que não possuem cadastro no RH, portanto cria-se o usuário aqui (Ex: terceirizados)
-            if ($pessoas->count() == 0) {
+            // Permite prestadores de serviço (terceirizados) com matrícula no padrão pXXXXX
+            $is_prestador = $matricula && str($matricula)->lower()->startsWith('p');
+
+            if ($is_prestador && $pessoas->count() == 0) {
                 $pessoas->push([
                     'cpf' => $cpf,
                     'matricula' => $cpf,
@@ -74,12 +80,12 @@ class KeycloakController
                 $model::updateOrCreate(
                     [
                         'cpf' => $cpf,
-                        'matricula' => $pessoa['matricula']
+                        'matricula' => $pessoa['matricula'],
                     ],
                     [
                         'uuid' => $keycloakUser->getId(),
                         'login' => $keycloakUser->getNickname(),
-                        'foto' => $pessoa['foto'] ?? null,
+                        'foto' => $pessoa['fotoUri'] ?? $pessoa['foto'] ?? null,
                         'nome' => $pessoa['nomeFinal'] ?? $keycloakUser->getName(),
                         'email' => $keycloakUser->getEmail(),
                         'localizacao' => $pessoa['localizacao'] ?? null,
@@ -111,7 +117,7 @@ class KeycloakController
                 return redirect('/auth/perfil');
             }
         } catch (Throwable $th) {
-            throw new AuthorizationException('Erro ao fazer login: ' . $th->getMessage());
+            throw new AuthorizationException('Erro ao fazer login: '.$th->getMessage());
         }
 
         // Redireciona de volta para página que estava tentando acessar.
@@ -122,11 +128,7 @@ class KeycloakController
     public function logout(Request $request)
     {
         // Gera URL de logout do Keycloak
-        // Os ambientes estão com versões diferentes do Keycloak.
-        // O processo de logout é diferente.
-        $url_logout = app()->isProduction()
-            ? Socialite::driver('keycloak')->getLogoutUrl(config('app.url'))
-            : Socialite::driver('keycloak')->getLogoutUrl(config('app.url'), config('tjdft.keycloak.client_id'));
+        $url_logout = Socialite::driver('keycloak')->getLogoutUrl(config('app.url'), config('tjdft.keycloak.client_id'));
 
         // Desloga na aplicação
         auth()->logout();

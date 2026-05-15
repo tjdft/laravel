@@ -10,7 +10,7 @@ class PessoasPolvoService extends PolvoService
     {
         $query = '
             {
-              pessoas(cpf: "' . $cpf . '" status:[ATIVO, APOSENTADO]) {
+              pessoas(cpf: "'.$cpf.'" status:[ATIVO, APOSENTADO]) {
                 data {
                   matricula
                   nome
@@ -20,6 +20,7 @@ class PessoasPolvoService extends PolvoService
                   email
                   login
                   cpf
+                  fotoUri
                   foto
                   tipo
                   status
@@ -46,9 +47,9 @@ class PessoasPolvoService extends PolvoService
         $login = addslashes($login);
         $login = str_replace("\\'", "'", $login);
 
-        $query = "
+        $query = '
             {
-              pessoas(login: \"" . $login . "\") {
+              pessoas(login: "'.$login.'") {
                 data {
                   matricula
                   nome
@@ -59,6 +60,7 @@ class PessoasPolvoService extends PolvoService
                   login
                   cpf
                   foto
+                  fotoUri
                   tipo
                   status
                   localizacao{
@@ -71,7 +73,7 @@ class PessoasPolvoService extends PolvoService
               }
 
             }
-        ";
+        ';
 
         $response = $this->graphql($query);
 

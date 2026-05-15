@@ -16,6 +16,7 @@ beforeEach(function () {
         'uuid' => 'a44740ee-4c04-495a-b282-1f22cbc8d551',
         'nome' => 'Maria Silva',
         'login' => 't123456',
+        'matricula' => 'p99999',            // No Keycloak a matrícula vem com letra "p" no início para prestadores de serviço. Na verdade matrícula não deveria ter letra.
         'email' => 'maria@tjdft.jus.br',
         'cpf' => '123456789',
     ];
@@ -32,8 +33,8 @@ beforeEach(function () {
             'id' => '200120',
             'codigo' => '200120',
             'sigla' => 'PROJ1',
-            'nome' => 'Serviço de Projetos 1'
-        ]
+            'nome' => 'Serviço de Projetos 1',
+        ],
     ];
 
     // Fake do Polvo
@@ -48,8 +49,8 @@ beforeEach(function () {
             'id' => '200140',
             'codigo' => '200140',
             'sigla' => 'PROJ2',
-            'nome' => 'Serviço de Projetos 2'
-        ]
+            'nome' => 'Serviço de Projetos 2',
+        ],
     ];
 
     // Condições de retorno do Polvo
@@ -62,11 +63,11 @@ beforeEach(function () {
             return Http::response([
                 'data' => [
                     'pessoas' => [
-                        'data' => $this->retornoVazio ? [] : ($this->multiplosVinculo ? [$this->joaoPolvo, $this->mariaPolvo] : [$this->mariaPolvo])
-                    ]
-                ]
+                        'data' => $this->retornoVazio ? [] : ($this->multiplosVinculo ? [$this->joaoPolvo, $this->mariaPolvo] : [$this->mariaPolvo]),
+                    ],
+                ],
             ]);
-        }
+        },
     ]);
 
     // Mock da resposta do Socialite
@@ -78,6 +79,7 @@ beforeEach(function () {
     });
 
     $this->keycloakUser->attributes['cpf'] = $this->mariaKeycloak['cpf'];
+    $this->keycloakUser->attributes['matricula'] = $this->mariaKeycloak['matricula'];
 
     Socialite::shouldReceive('driver->stateless->user')->andReturn($this->keycloakUser);
 });

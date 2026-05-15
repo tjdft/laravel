@@ -65,13 +65,13 @@ trait HasImpersonate
         return self::updateOrCreate(
             [
                 'cpf' => $pessoa['cpf'],
-                'matricula' => $pessoa['matricula']
+                'matricula' => $pessoa['matricula'],
             ],
             [
                 'login' => $pessoa['login'],
-                'foto' => $pessoa['foto'] ?? null,
-                'nome' => $pessoa['nomeFinal'] ?? "Sem nome",
-                'email' => $pessoa['email'] ?? "Sem e-mail",
+                'foto' => $pessoa['fotoUri'] ?? $pessoa['foto'] ?? null,
+                'nome' => $pessoa['nomeFinal'] ?? 'Sem nome',
+                'email' => $pessoa['email'] ?? 'Sem e-mail',
                 'localizacao' => $pessoa['localizacao'] ?? null,
                 'rh_tipo' => $pessoa['tipo'] ?? null,
                 'rh_status' => $pessoa['status'] ?? null,

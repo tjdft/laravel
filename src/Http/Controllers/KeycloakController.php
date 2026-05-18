@@ -63,7 +63,7 @@ class KeycloakController
             $pessoas = new PessoasPolvoService()->porCpf($cpf);
 
             // Permite prestadores de serviço (terceirizados) com matrícula no padrão pXXXXX
-            $is_prestador = $matricula && str($matricula)->lower()->startsWith('p');
+            $is_prestador = $matricula && str($matricula)->lower()->startsWith('p') || (str($keycloakUser->getNickname())->lower()->startsWith('p'));
 
             if ($is_prestador && $pessoas->count() == 0) {
                 $pessoas->push([

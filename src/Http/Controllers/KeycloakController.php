@@ -51,21 +51,15 @@ class KeycloakController
             // CPF do usuário no Keycloak
             $cpf = $keycloakUser->attributes['cpf'] ?? $keycloakUser->user['cpf'] ?? $keycloakUser->user['cpf'][0] ?? null;
 
-            // Matrícula do usuário no Keycloak
-            // Nota: o attribute "matricula" no keycloak possui uma letra, mas não deveria. Ex: t318998
-            $matricula = $keycloakUser->attributes['matricula'] ?? $keycloakUser->user['matricula'] ?? $keycloakUser->user['matricula'][0] ?? null;
-
             if (! $cpf) {
                 throw new LogicException('Usuário não possui CPF cadastrado no Keycloak.');
             }
 
-            // Obtém dados do POLVO APU RH
+            // Obtém dados do POLVO API RH
             $pessoas = new PessoasPolvoService()->porCpf($cpf);
 
-            // Permite prestadores de serviço (terceirizados) com matrícula no padrão pXXXXX
-            $is_prestador = $matricula && str($matricula)->lower()->startsWith('p') || (str($keycloakUser->getNickname())->lower()->startsWith('p'));
-
-            if ($is_prestador && $pessoas->count() == 0) {
+            // Usuários externos que não possuem cadastro no RH, portanto cria-se o usuário aqui (Ex: terceirizados)
+            if ($pessoas->count() == 0) {
                 $pessoas->push([
                     'cpf' => $cpf,
                     'matricula' => $cpf,

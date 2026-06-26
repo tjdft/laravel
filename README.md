@@ -112,6 +112,16 @@ Ajuste  `tests/Pest.php`.
 pest()->extend(Tests\TestCase::class)->in('Feature', 'Unit');
 ```
 
+Adicione este trecho em `resources/css/app.css`.
+
+```css
+/********************************************
+* Importa tema do pacote `tjdft/laravel`
+*********************************************/
+
+@import "../../vendor/tjdft/laravel/resources/css/tjdft.css";
+```
+
 Ajuste  `tests/TestCase.php`.
 
 ```php

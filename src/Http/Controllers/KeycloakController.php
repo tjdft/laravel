@@ -49,7 +49,7 @@ class KeycloakController
             $keycloakUser = Socialite::driver('keycloak')->stateless()->user();
 
             // CPF do usuário no Keycloak
-            $cpf = $keycloakUser->attributes['cpf'] ?? $keycloakUser->user['cpf'] ?? $keycloakUser->user['cpf'][0] ?? null;
+            $cpf = $keycloakUser->attributes['cpf'] ?? $keycloakUser->user['cpf'][0] ?? $keycloakUser->user['cpf'] ?? null;
 
             if (! $cpf) {
                 throw new LogicException('Usuário não possui CPF cadastrado no Keycloak.');
@@ -111,7 +111,7 @@ class KeycloakController
                 return redirect('/auth/perfil');
             }
         } catch (Throwable $th) {
-            throw new AuthorizationException('Erro ao fazer login: '.$th->getMessage());
+            throw new AuthorizationException('Erro ao fazer login: ' . $th->getMessage());
         }
 
         // Redireciona de volta para página que estava tentando acessar.

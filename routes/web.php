@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use TJDFT\Laravel\Http\Controllers\FotoController;
 use TJDFT\Laravel\Http\Controllers\KeycloakController;
 
 Route::middleware('web')->group(function () {
@@ -9,6 +10,9 @@ Route::middleware('web')->group(function () {
     Route::get('/auth/redirect/keycloak', [KeycloakController::class, 'redirect']);
     Route::get('/auth/callback/keycloak', [KeycloakController::class, 'callback']);
     Route::get('/auth/logout/keycloak', [KeycloakController::class, 'logout']);
+
+    // Fotos
+    Route::get('/tjdft/fotos/{matricula}', [FotoController::class, 'show']);
 
     // Imagem padrão do usuário
     Route::get('/user.png', function () {

@@ -65,12 +65,6 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
 # Instalação
 
-Utilize o **Instalador Laravel do TJDFT** para criar uma nova aplicação com este pacote pré-configurado.
-
-<details>
-  <summary>Ou, execute a instalação manual</summary>
-<br>
-
 Adicione o pacote.
 
 ```bash
@@ -147,6 +141,9 @@ Crie as novas variáveis de ambiente em `.env`.
 # Sentry
 TJDFT_SENTRY_LARAVEL_DSN=
 
+# Fotos
+TJDFT_FOTOS_URL=https://<URL_FOTOS>
+
 # Schema onde devem ser ativadas as extensões do PostgreSQL
 # Use apenas se o schema principal da aplicação for diferente de `public`.
 TJDFT_PGSQL_EXTENSIONS_SCHEMA=core
@@ -203,7 +200,6 @@ php artisan migrate:fresh --seed
 ```
 
 **Pronto!**
-</details>
 
 
 <br>

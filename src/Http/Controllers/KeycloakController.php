@@ -49,7 +49,7 @@ class KeycloakController
             $keycloakUser = Socialite::driver('keycloak')->stateless()->user();
 
             // CPF do usuário no Keycloak
-            $cpf = $keycloakUser->attributes['cpf'] ?? $keycloakUser->user['cpf'][0] ?? $keycloakUser->user['cpf'] ?? null;
+            $cpf = $keycloakUser->attributes['cpf'] ?? (is_array($keycloakUser->user['cpf']) ? $keycloakUser->user['cpf'][0] : $keycloakUser->user['cpf']) ?? null;
 
             if (! $cpf) {
                 throw new LogicException('Usuário não possui CPF cadastrado no Keycloak.');

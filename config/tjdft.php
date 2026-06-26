@@ -68,5 +68,10 @@ return [
     // AUDITORIA
     'auditoria' => [
         'maximxo_exibicao' => env('TJDFT_AUDITORIA_MAXIMO_EXIBICAO', 20),
+    ],
+
+    // FOTOS
+    'fotos' => [
+        'url' => env('TJDFT_FOTOS_URL'),
     ]
 ];

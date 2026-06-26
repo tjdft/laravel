@@ -629,7 +629,7 @@ Este pacote inclui um conjunto extra de ícones para utilização nos componente
 <x-button label="Consulta" icon="lucide.users" />
 
 <!-- MDI Icons possuem prefixo "mdi." -->
-<x-button label="Contato" icon="mdi.whatsapp" />
+<x-button label="Contato" icon="bi.whatsapp" />
 ```
 
 <br>

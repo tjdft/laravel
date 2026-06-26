@@ -30,7 +30,7 @@
         "webonyx/graphql-php": "^15.32",
         "fakerphp/faker": "^1.24",
         "owen-it/laravel-auditing": "^14.0",
-        "laravellegends/pt-br-validator": "^12.2"
+        "laravellegends/pt-br-validator": "^13.0"
     },
     "require-dev": {
         "orchestra/testbench": "^10.11",

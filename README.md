@@ -78,14 +78,27 @@ Ajuste  `tests/Pest.php`.
 pest()->extend(Tests\TestCase::class)->in('Feature', 'Unit');
 ```
 
-Adicione este trecho ao final de `resources/css/app.css`.
+Ajuste `resources/css/app.css`.
 
 ```css
-/********************************************
-* Importa tema do pacote `tjdft/laravel`
-*********************************************/
-
+@import 'tailwindcss';
 @import "../../vendor/tjdft/laravel/resources/css/tjdft.css";
+
+/* ... */
+```
+
+Ajuste `vite.config.js`.
+
+```js
+// ...
+
+input: [
+    "resources/css/app.css",
+    "resources/js/app.js",
+    "vendor/tjdft/laravel/resources/css/tinymce.css"
+]
+
+// ...
 ```
 
 Ajuste `bootstrap/app.php`.
@@ -448,6 +461,63 @@ public function mount(): void
 <!-- Se não tem a permissão, oculta o menu -->
 
 <x-menu-item title="Criar Página" link="/paginas/create" :hidden="auth()->user()->cannot('paginas.criar')" />
+```
+
+**givePermissionTo(Collection|array|string $permissions): void**
+
+```php
+// Adiciona permissões ao usuário
+
+$user->givePermissionTo('pagina.excluir');
+$user->givePermissionTo(['comprovante.visualizar', 'impersonate']);
+```
+
+**synPermissions(Collection|array $permissions): void**
+
+```php
+// Remove todas as permissions e adiciona apenas as informadas.
+
+$user->syncPermissions(['comprovante.visualizar', 'impersonate']);
+```
+
+**hasPermission(string $permission): bool**
+
+```php
+// Verifica se o usuário tem a permissão específica
+
+$user->hasPermission(['impersonate']);
+```
+
+**hasAnyPermission(array $permissions): bool**
+
+```php
+// Verifica se o usuário tem pelo menos uma das permissões informadas
+
+$user->hasAnyPermission(['impersonate', 'permissoes.gerenciar']);
+```
+
+**revokePermissionTo(string $permission): void**
+
+```php
+// Remove a permissão específica do usuário
+
+$user->revokePermissionTo('impersonate');
+```
+
+**isAdmin(): bool**
+
+```php
+// Verifica se o usuário tem a permissão master `permissoes.gerenciar`
+
+$user->isAdmin();
+```
+
+**permissions(): Collection**
+
+```php
+// Retorna todas as permissions do usuário
+
+$user->permissions();
 ```
 
 <br>

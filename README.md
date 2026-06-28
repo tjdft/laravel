@@ -426,7 +426,7 @@ class AtualizarPermissionsLoginAction
 }
 ```
 
-Adicione `PermissioSeeder` aos seeders da aplicação.
+Adicione `PermissionSeeder` aos seeders da aplicação.
 
 ```php
 // database/seeders/DatabaseSeeder

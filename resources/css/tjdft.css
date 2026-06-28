@@ -7,6 +7,7 @@
 
 /* maryUI */
 @source "../../../../robsontenorio/mary/src/View/Components/**/*.php";
+@source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
 
 /* dasyUI */
 @plugin "daisyui" {

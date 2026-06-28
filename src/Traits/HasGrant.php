@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use TJDFT\Laravel\Models\Grant;
 use TJDFT\Laravel\Models\Permission;
-use TJDFT\Laravel\Models\Role;
 
 trait HasGrant
 {
@@ -15,36 +14,9 @@ trait HasGrant
         return $this->hasOne(Grant::class);
     }
 
-    public function roles(): Collection
-    {
-        return Role::whereIn('name', $this->grant->roles ?? [])->get();
-    }
-
     public function permissions(): Collection
     {
         return Permission::whereIn('name', $this->grant->permissions ?? [])->get();
-    }
-
-    public function assignRole(string $role): void
-    {
-        $role = Role::where('name', $role)->firstOrFail();
-
-        $grant = $this->grant()->firstOrNew();
-
-        $grant->roles = $grant->roles?->merge($role->name) ?? collect([$role->name]);
-        $grant->permissions = $grant->permissions?->merge($role->permissions)->unique() ?? $role->permissions;
-        $grant->save();
-    }
-
-    public function unassignRole(string $role): void
-    {
-        $role = Role::where('name', $role)->firstOrFail();
-
-        $grant = $this->grant()->firstOrNew();
-
-        $grant->roles = $grant->roles?->filter(fn($r) => $r !== $role->name) ?? collect();
-        $grant->permissions = $grant->permissions?->filter(fn($perm) => ! $role->permissions->contains($perm)) ?? collect();
-        $grant->save();
     }
 
     public function givePermissionTo(Collection|array|string $permissions): void
@@ -74,18 +46,6 @@ trait HasGrant
         $grant->save();
     }
 
-    public function syncRoles(array $roles): void
-    {
-        $rolesCollection = collect($roles);
-
-        $permissions = Role::whereIn('name', $rolesCollection)->get()->flatMap->permissions->unique();
-
-        $grant = $this->grant()->firstOrNew();
-        $grant->roles = $rolesCollection;
-        $grant->permissions = $permissions;
-        $grant->save();
-    }
-
     public function can($abilities, $arguments = []): bool
     {
         return $this->grant?->permissions?->contains($abilities) ?? false;
@@ -103,18 +63,6 @@ trait HasGrant
         }
     }
 
-    // Possui a role específica
-    public function hasRole(string $role): bool
-    {
-        return $this->grant?->roles?->contains($role) ?? false;
-    }
-
-    // Possui qualquer uma das roles informadas
-    public function hasAnyRole(array $roles): bool
-    {
-        return $this->grant?->roles?->intersect($roles)->isNotEmpty() ?? false;
-    }
-
     // Possui a permission específica
     public function hasPermission(string $permission): bool
     {
@@ -130,6 +78,6 @@ trait HasGrant
     // Verifica se o usuário é administrador
     public function isAdmin(): bool
     {
-        return $this->hasRole('admin') || $this->hasPermission('permissions.gerenciar');
+        return $this->hasPermission('permissoes.gerenciar');
     }
 }

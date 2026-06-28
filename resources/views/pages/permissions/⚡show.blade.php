@@ -163,7 +163,7 @@ new class extends Component {
             <x-list-item :item="$user" value="nome" sub-value="matricula" avatar="foto" fallback-avatar="/user.png" no-separator no-hover class="-my-3" />
         </x-card>
 
-        <div class="grid grid-cols-2 gap-8">
+        <div class="grid lg:grid-cols-2 gap-8">
             {{-- PERMISSÕES DISPONÍVEIS  --}}
             <x-card title="Opções" shadow separator>
                 <x-slot:menu>

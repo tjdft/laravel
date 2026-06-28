@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use TJDFT\Laravel\Models\Permission;
-use TJDFT\Laravel\Models\Role;
 
 return new class extends Migration {
     public function up(): void
@@ -18,18 +17,9 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        Schema::create($tables['roles'], function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('description');
-            $table->json('permissions')->nullable()->comment('Conjunto padrão de permissions');
-            $table->timestamps();
-        });
-
         Schema::create($tables['grants'], function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->json('roles')->nullable();
             $table->json('permissions')->nullable();
             $table->timestamps();
         });
@@ -45,12 +35,6 @@ return new class extends Migration {
             'name' => 'impersonate',
             'description' => 'Impersonate',
         ]);
-
-        // Role admin
-        Role::create([
-            'name' => 'admin',
-            'description' => 'Administrador'
-        ])->givePermissionTo(['permissoes.gerenciar', 'impersonate']);
     }
 
     public function down(): void
@@ -58,7 +42,6 @@ return new class extends Migration {
         $tables = config('tjdft.acl.tables');
 
         Schema::dropIfExists($tables['permissions']);
-        Schema::dropIfExists($tables['roles']);
         Schema::dropIfExists($tables['grants']);
     }
 };

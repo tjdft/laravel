@@ -20,12 +20,6 @@ test('Verifica se a query NÃO contém o trecho esperado', function () {
     $this->assertPolvoQueryContains('login: "123"');
 });
 
-test('Cria usuário com role', function () {
-    $user = $this->login(role: 'admin');
-
-    expect($user->hasRole('admin'))->toBeTrue();
-});
-
 test('Cria usuário com permissões', function () {
     $user = $this->login(permission: ['edit articles', 'delete articles']);
 

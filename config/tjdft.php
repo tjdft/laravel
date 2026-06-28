@@ -4,7 +4,7 @@ return [
 
     /**
      * A classe invocada antes de finalizar o processo de login.
-     * Utilize-a para definir a lógica de concessão dinâmica de roles do usuário.
+     * Utilize-a para definir a lógica de concessão dinâmica de permissions do usuário.
      */
     'permissions_action' => env('TJDFT_PERMISSIONS_ACTION', 'App\Actions\AtualizarPermissionsLoginAction'),
 
@@ -18,9 +18,8 @@ return [
     // ACL
     'acl' => [
         'tables' => [
-            'roles' => env('TJDFT_ACL_TABLES_ROLES', 'acl_roles'),
-            'permissions' => env('TJDFT_ACL_TABLES_ROLES', 'acl_permissions'),
-            'grants' => env('TJDFT_ACL_TABLES_ROLES', 'acl_grants'),
+            'permissions' => env('TJDFT_ACL_TABLES_PERMISSIONS', 'acl_permissions'),
+            'grants' => env('TJDFT_ACL_TABLES_GRANTS', 'acl_grants'),
         ]
     ],
 

@@ -17,18 +17,14 @@ trait TestUtils
 
     /**
      * Loga um usuário específico ou cria um aleatório.
-     * É possível definir uma role e/ou permissões para o usuário a ser criado.
+     * É possível definir permissions para o usuário a ser criado.
      */
-    public function login(?Authenticatable $user = null, ?string $role = null, array|string|null $permission = null): Authenticatable
+    public function login(?Authenticatable $user = null, array|string|null $permission = null): Authenticatable
     {
         /** @var Model $model */
         $model = config('auth.providers.users.model');
 
         $user = $user ?? $model::factory()->create();
-
-        if ($role) {
-            $user->assignRole($role);
-        }
 
         if ($permission) {
             $user->givePermissionTo($permission);

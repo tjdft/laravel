@@ -65,10 +65,10 @@ Instale maryUI incluído no pacote.
 php artisan mary:install --yarn
 ```
 
-Altere o idioma em `.env`
+Ajuste `config/app.php`
 
-```dotenv
-APP_LOCALE=pt_BR
+```php
+'timezone' => 'America/Sao_Paulo',
 ```
 
 Ajuste  `tests/Pest.php`.
@@ -158,9 +158,21 @@ abstract class TestCase extends BaseTestCase
 }
 ```
 
-Crie as novas variáveis de ambiente em `.env`.
+Ajuste `.env` / `.env.example`.
 
 ```dotenv
+APP_LOCALE=pt_BR
+
+# ...
+# ...
+# ...
+
+DB_SSLMODE=false
+
+# ...
+# ...
+# ...
+
 # Sentry
 TJDFT_SENTRY_LARAVEL_DSN=
 
@@ -288,7 +300,7 @@ Utilize a rota `/auth/permissions` para acessar o gerenciamento de permissões.
 ```
 <!-- @formatter:on -->
 
-Estas são as roles e permissions iniciais registradas automaticamente pelo pacote.
+Estas são as permissions iniciais registradas automaticamente pelo pacote.
 
 ```php
 // Permissão master
@@ -302,49 +314,15 @@ Permission::create([
     'name' => 'impersonate',
     'description' => 'Impersonate',
 ]);
-
-// Role admin
-Role::create([
-    'name' => 'admin',
-    'description' => 'Administrador'
-])->givePermissionTo(['permissoes.gerenciar', 'impersonate']);
 ```
 
-**EXEMPLO: `authorize()`**
-
-```php
-public function mount(): void 
-{
-    // Lança uma exceção 403 se o usuário não tiver a permissão
-    auth()->user()->authorize("comprovante-rendimentos.visualizar");
-}
-```
-
-**EXEMPLO: `can()`**
-
-```php
-// Se tem a permissão, mostra o aviso
-@if(auth()->user()->can('consignacao.portabilidade')) 
-    <div>Disponível para portabilidade</div>
-@endif
-```
-
-**EXEMPLO: `cannot()`**
-
-```html
-<!-- Se não tem a permissão, oculta o menu -->
-
-<x-menu-item title="Criar Página" link="/paginas/create" :hidden="auth()->user()->cannot('paginas.criar')" />
-```
-
-**EXEMPLO:** crie outras roles e permissions na sua aplicação.
+Crie permissions da sua aplicação.
 
 ```php
 // database/seeders/PermissionsSeeder.php
 
 use Illuminate\Database\Seeder;
 use TJDFT\Laravel\Models\Permission;
-use TJDFT\Laravel\Models\Role;
 
 // ...
 
@@ -352,6 +330,7 @@ class PermissionsSeeder extends Seeder
 {
     public function run(): void
     {     
+        // Evita duplicação
         if (Permission::where('name', 'comprovante.processar')->count()) {
             return;
         }
@@ -366,62 +345,22 @@ class PermissionsSeeder extends Seeder
         Permission::create([
             'name' => 'comprovante.visualizar',
             'description' => 'Comprovantes de Rendimentos / Visualizar',
-        ]);
-        
-        // FUNCIONÁRIO tem permissão apenas para visualizar
-        Role::create([
-            'name' => 'funcionario', 
-            'description' => 'Funcionário'
-         ])->givePermissionTo([
-            'comprovante.visualizar',
-        ]);
-        
-        // ADMIN tem todas as permissões
-        // A role `admin` já é criada automaticamente pelo pacote
-        Role::firstWhere('name', 'admin')->givePermissionTo(Permission::all());     
-        
+        ]);       
+                        
         // Defina os administradores iniciais do sistema
         User::create([
             'cpf' => '0123456789',
             'matricula' => '123456',
             'login' => 't123456',
             'nome' => 'Maria Silva'
-        ])->assignRole('admin');
-        
-        // Note que é inviável atribuir previamente as roles para milhares de `funcionários`.        
-        // Confira o exemplo de roles/permissions dinâmicas abaixo.
-    }
-}
-```
-
-**EXEMPLO:** lógica personalizada para definir dinamicamente roles/permissions.
-
-```php
-// app/Actions/AtualizarPermissionsLoginAction.php
-
-<?php
-
-namespace App\Actions;
-
-use App\Models\User;
-
-/**
- *  Esta classe é chamada automaticamente pelo pacote `tjdft/laravel` após o login do usuário.
- *  Baseado nos dados do usuário, defina uma lógica para atribuição de roles.
- */
-class AtualizarPermissionsLoginAction
-{
-    public function __construct(private User $user)
-    {
-    }
-
-    public function execute(): void
-    { 
-        // Exemplo: se é um `SERVIDOR`, atribua a role 'funcionario'.
-        
-        if ($this->user->rh_tipo === 'SERVIDOR') {
-            $this->user->assignRole('funcionario');
-        }
+        ])->givePermissionTo([
+            'permissoes.gerenciar', 
+            'impersonate', 
+            'comprovante.processar', 
+            'comprovante.visualizar'
+        ]);
+                
+        // ... 
     }
 }
 ```
@@ -450,6 +389,65 @@ Rode as migrations.
 # Esta ação destruirá e recriará o banco!
 
 php artisan migrate:fresh --seed
+```
+
+Lógica personalizada para definir permissions dinamicamente.
+
+```php
+// app/Actions/AtualizarPermissionsLoginAction.php
+
+<?php
+
+namespace App\Actions;
+
+use App\Models\User;
+
+/**
+ *  Esta classe é chamada automaticamente pelo pacote `tjdft/laravel` após o login do usuário.
+ *  Baseado nos dados do usuário, defina uma lógica para atribuição de permissions.
+ */
+class AtualizarPermissionsLoginAction
+{
+    public function __construct(private User $user)
+    {
+    }
+
+    public function execute(): void
+    { 
+        // Exemplo: se é um `SERVIDOR`, permite visualizar comprovantes.
+        
+        if ($this->user->rh_tipo === 'SERVIDOR') {
+            $this->user->givePermissionTo(['comprovante.visualizar']);
+        }
+    }
+}
+```
+
+**authorize(): void**
+
+```php
+public function mount(): void 
+{
+    // Lança uma exceção 403 se o usuário não tiver a permissão
+    auth()->user()->authorize("comprovante-rendimentos.visualizar");
+}
+```
+
+**can(): bool**
+
+```php
+// Se tem a permissão, mostra o aviso
+@if(auth()->user()->can('consignacao.portabilidade')) 
+    <div>Disponível para portabilidade</div>
+@endif
+```
+
+**cannot(): bool**
+
+```html
+<!-- Se não tem a permissão, oculta o menu -->
+
+<x-menu-item title="Criar Página" link="/paginas/create" :hidden="auth()->user()->cannot('paginas.criar')" />
 ```
 
 <br>
@@ -666,7 +664,35 @@ Este pacote inclui um conjunto extra de ícones para utilização nos componente
 
 <br>
 
-# Lazy spinner
+# Componentes
+
+**NENHUM RESULTADO**
+
+```html
+<!-- Mensagem padrão, quando não há resultados -->
+
+<livewire:tjdft::nenhum-resultado />
+
+<livewire:tjdft::nenhum-resultado titulo="Nenhuma modificação." />
+```
+
+**AMBIENTE**
+
+```html
+<!-- Aviso de ambiente de teste (layout) -->
+
+<livewire:tjdft::ambiente />
+```
+
+**IMPERSONATE**
+
+```html
+<!-- Aviso de Impersonate (layout) -->
+
+<livewire:tjdft::impersonating />
+```
+
+**LAZY SPINNER**
 
 Para componentes  `lazy` , adicione o trait `HasSpinnerPlaceholder` para exibir um spinner de carregamento enquanto o componente é renderizado.
 

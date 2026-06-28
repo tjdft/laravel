@@ -27,7 +27,6 @@ class Grant extends Model
     protected function casts(): array
     {
         return [
-            'roles' => AsCollection::class,
             'permissions' => AsCollection::class,
         ];
     }

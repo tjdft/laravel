@@ -95,7 +95,7 @@ test('Não pode personificar administradores', function () {
         'cpf' => '12345678900',
         'matricula' => '999999',
         'login' => 't999999',
-    ])->assignRole('admin');
+    ])->givePermissionTo('permissoes.gerenciar');
 
     // Dado que estou logado com permissão de personificação
     $usuario_original = $this->login(permission: 'impersonate');

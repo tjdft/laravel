@@ -19,47 +19,35 @@
 
 Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
-**Autenticação e Autorização:**
+**Integrações:**
 
-- Fluxo de autenticação com **Keycloak**.
-- Gerenciamento de **Permissões**.
-- Funcionalidade de **Impersonate**.
+- Keycloak
+- API RH
+- Sentry
+- SMAX
 
-**Auditoria:**
+**Funcionalidades:**
 
-- Mecanismo de auditoria de models.
+- Auditoria
+- Permissões
+- Impersonate
+- GraphQL Faker
 
-**Integração com o RH:**
+**UI:**
 
-- Classe base para consulta na **API RH**.
-
-**Integração com o Sentry**
-
-- Pré-configuração do **Sentry** para monitoramento de erros.
-
-**Integração com o SMAX**
-
-- Abertura de requisições no **SMAX** (Central de Atendimento).
-
-**Interface:**
-
-- Inclui a biblioteca de componentes **maryUI**.
-- Tela de **erro** padronizada.
-- Pacote extra de **ícones**.
+- Componentes **maryUI** + pacotes de ícones.
+- Página de **erro** padronizada.
 - Arquivos de **translation** em `pt_BR`.
-- Utilitários `Numero` e `Data` para diversas **formatações** em tela.
+
+**Utils:**
+
+- Validações adicionais para formatos brasileiros (CPF, CNPJ, CEP, etc).
+- Utilitários `Numero` e `Data` para formatações diversas.
 - Trait `HasSearchAny` para busca simplificada em **múltiplos campos**.
 - Trait `WithPaginationAndReset` para paginação simplificada com **Livewire**.
 - Trait `HasSpinnerPlaceholder` para exibir um spinner em componentes `lazy`.
-
-**Testes automatizados:**
-
 - Trait `TestUtils` com métodos auxiliares para testes automatizados.
-- **GraphQL Faker** para simular respostas da **API RH** em ambiente de testes.
-
-**Postgres:**
-
-- Ativa extensões úteis do **PostgreSQL** (unaccent, pg_trgm).
+- Ativa extensões úteis do **PostgreSQL** (unaccent, pg_trgm, ...).
 
 <br>
 
@@ -131,6 +119,10 @@ class User extends Authenticatable
     
     //...
     
+    protected $guarded = ['id'];
+    
+    //...
+    
     public function primeiroNome(): Attribute
     {
         return Attribute::make(
@@ -193,9 +185,9 @@ TJDFT_KEYCLOAK_CLIENT_ID=<NOME_CLIENT>
 TJDFT_KEYCLOAK_CLIENT_SECRET=<SEGREDO>
 
 # SMAX
-TJDFT_SMAX_URL=https://<URL_BASE_SMAX>
-TJDFT_SMAX_TENANT_ID=<ID_TENANT_DO_SMAX>
-TJDFT_SMAX_REQUESTS_OFFERING=<IDA_FERTA_DO_SMAX>
+TJDFT_SMAX_URL=https://<URL_SMAX>
+TJDFT_SMAX_TENANT_ID=<ID_TENANT_SMAX>
+TJDFT_SMAX_REQUESTS_OFFERING=<ID_OFERTA_SMAX>
 TJDFT_SMAX_LOGIN=
 TJDFT_SMAX_PASSWORD=
 TJDFT_SMAX_FALLBACK_EMAILS=
@@ -232,6 +224,25 @@ php artisan migrate:fresh --seed
 
 **Pronto!**
 
+
+
+---
+
+🚨 Configurações padrões ativadas por este pacote.
+
+```php
+// Proíbe comandos destrutivos em produção
+DB::prohibitDestructiveCommands($this->app->isProduction());
+
+// Moeda
+Number::useLocale('pt-BR');
+Number::useCurrency('BRL');
+
+// now() + json_encode()
+Date::serializeUsing(function ($date) {
+    return $date->format('Y-m-d H:i:s');
+});
+```
 
 <br>
 

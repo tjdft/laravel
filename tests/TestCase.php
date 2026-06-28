@@ -50,6 +50,9 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         // App name
         config()->set('app.name', 'Teste');
 
+        // Fotos
+        config()->set('tjdft.fotos.url', 'https://fotos.com');
+
         // Configurações do Polvo
         config()->set('tjdft.polvo.api_url', 'https://polvo.com/graphql');
         config()->set('tjdft.polvo.auth_url', 'https://polvo.com/auth/realms/COMPANY/protocol/openid-connect/token');

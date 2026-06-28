@@ -20,7 +20,7 @@ beforeEach(function () {
     ];
 });
 
-test('registra requisicao no SMAX', function () {
+test('Registra requisicao no SMAX', function () {
     // Retorna um PersonID do SMAX
     fakePersonID();
 
@@ -40,7 +40,7 @@ test('registra requisicao no SMAX', function () {
     Mail::assertNotSent(FeedbackMail::class);
 });
 
-test('envia email quando usuario nao tem cadastro no SMAX', function () {
+test('Envia email quando usuario nao tem cadastro no SMAX', function () {
     // Retorna vazio ao tentar obter o PersonID
     Http::fake([
         "*/Person*" => Http::response([
@@ -55,7 +55,7 @@ test('envia email quando usuario nao tem cadastro no SMAX', function () {
     Mail::assertSent(FeedbackMail::class);
 });
 
-test('envia email quando ha erro EXPLICITO durante o envio ao SMAX', function () {
+test('Envia email quando ha erro EXPLICITO durante o envio ao SMAX', function () {
     // Retorna um PersonID do SMAX
     fakePersonID();
 
@@ -71,7 +71,7 @@ test('envia email quando ha erro EXPLICITO durante o envio ao SMAX', function ()
     Mail::assertSent(FeedbackMail::class);
 });
 
-test('envia email quando ha erro IMPLICITO durante o envio ao SMAX', function () {
+test('Envia email quando ha erro IMPLICITO durante o envio ao SMAX', function () {
     // Retorna um PersonID do SMAX
     fakePersonID();
 
@@ -92,7 +92,7 @@ test('envia email quando ha erro IMPLICITO durante o envio ao SMAX', function ()
     Mail::assertSent(FeedbackMail::class);
 });
 
-test('corpo do email', function () {
+test('Corpo do email', function () {
     Mail::sendNow(new FeedbackMail($this->user, ...$this->feedback));
 
     // Então o email com os dados do formulário foi encaminhado com sucesso

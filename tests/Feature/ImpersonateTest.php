@@ -23,7 +23,7 @@ test('Usuários sem permissão não podem personificar.', function () {
     $this->get('/auth/impersonate')->assertForbidden();
 });
 
-test('Somente com permissão podem personificar.', function () {
+test('Somente pessoas com permissão podem personificar.', function () {
     // Dado que estou logado com permissão de personificação
     $this->login(permission: 'impersonate');
 

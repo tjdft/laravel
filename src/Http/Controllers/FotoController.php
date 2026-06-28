@@ -2,22 +2,20 @@
 
 namespace TJDFT\Laravel\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 
 /**
- * O serviço de fotos está protegido atrás do Azure Proxy.
- * Portanto, qualquer chamada fora da rede interna falhará.
- * Este endpoint contorna o problema, fazendo a chamada diretamente do lado do servidor, que não requer autenticação.
+ * Serve as fotos dos usuários por meio de um endpoint interno.
+ * Ex: /tjdft/fotos/123456
  *
- * NOTA: Quando desenvolvendo em localhost é necessário ligar a VPN, pois não há outra forma de contornar.
+ * Esta requisição ocorre do lado do servidor, contornando o problema de proxy.
+ * NOTA: Em localhost é necessário ligar a VPN para simular a rede interna.
  */
-class FotoController extends Controller
+class FotoController
 {
     public function show(string $matricula)
     {
-        $url = config('tjdft.fotos.url');
-        $url = str($url)->replaceLast('/', '')->append("/{$matricula}.jpg")->toString();
+        $url = str(config('tjdft.fotos.url'))->finish("/")->append("{$matricula}.jpg");
 
         return response()->stream(function () use ($url) {
             echo Http::get($url)->body();

@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Sleep;
 use TJDFT\Laravel\Services\PolvoService;
 
 trait TestUtils
@@ -90,6 +91,9 @@ trait TestUtils
 
         // Ativa fake de e-emails
         Mail::fake();
+
+        // Ativa fake de sleep/retries
+        Sleep::fake();
 
         // Bloqueia TODAS as requisições HTTP externas não mockadas.
         Http::preventStrayRequests();

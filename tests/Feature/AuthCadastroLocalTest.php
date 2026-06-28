@@ -4,22 +4,26 @@ namespace Tests\Feature\Auth;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Http;
-use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Socialite;
+use Laravel\Socialite\Two\User as SocialiteUser;
 use Livewire\Livewire;
-use Mockery\MockInterface;
-use SocialiteProviders\Keycloak\KeycloakExtendSocialite;
 use Workbench\App\Models\User;
 
 beforeEach(function () {
     // Fake do Keycloak
-    $this->mariaKeycloak = [
-        'uuid' => 'a44740ee-4c04-495a-b282-1f22cbc8d551',
-        'nome' => 'Maria Silva',
-        'login' => 't123456',
-        'matricula' => 'p99999',            // No Keycloak a matrícula vem com letra "p" no início para prestadores de serviço. Na verdade matrícula não deveria ter letra.
+    $this->mariaKeycloak = new SocialiteUser()->map([
+        'id' => 'a44740ee-4c04-495a-b282-1f22cbc8d999',
+        'name' => 'Maria Silva',
+        'nickname' => 't123456',
         'email' => 'maria@tjdft.jus.br',
-        'cpf' => '123456789',
-    ];
+        'user' => [
+            'cpf' => '123456789',
+        ]
+    ]);
+
+    $this->mariaKeycloak->attributes = null;
+
+    Socialite::fake('keycloak', $this->mariaKeycloak);
 
     // Fake do Polvo
     $this->mariaPolvo = [
@@ -69,19 +73,6 @@ beforeEach(function () {
             ]);
         },
     ]);
-
-    // Mock da resposta do Socialite
-    $this->keycloakUser = $this->mock(KeycloakExtendSocialite::class, function (MockInterface $mock) {
-        $mock->shouldReceive('getId')->andReturn($this->mariaKeycloak['uuid'])
-            ->shouldReceive('getName')->andReturn($this->mariaKeycloak['nome'])
-            ->shouldReceive('getEmail')->andReturn($this->mariaKeycloak['email'])
-            ->shouldReceive('getNickName')->andReturn($this->mariaKeycloak['login']);
-    });
-
-    $this->keycloakUser->attributes['cpf'] = $this->mariaKeycloak['cpf'];
-    $this->keycloakUser->attributes['matricula'] = $this->mariaKeycloak['matricula'];
-
-    Socialite::shouldReceive('driver->stateless->user')->andReturn($this->keycloakUser);
 });
 
 test('Após o login redireciona para url que estava tentando acessar', function () {
@@ -102,7 +93,7 @@ test('Cadastra usuário localmente na aplicação após o login', function () {
 
     // Dado que o usuário não existe localmente
     $this->assertDatabaseMissing('users', [
-        'uuid' => $this->mariaKeycloak['uuid'],
+        'uuid' => $this->mariaKeycloak->getId(),
     ]);
 
     // Quando eu fizer login no keycloack
@@ -110,13 +101,13 @@ test('Cadastra usuário localmente na aplicação após o login', function () {
     $this->get('/auth/callback/keycloak')->assertRedirect('/');
 
     // Então o cadastro é realizado localmente
-    $mariaLocal = User::where('uuid', $this->mariaKeycloak['uuid'])->first();
+    $mariaLocal = User::where('uuid', $this->mariaKeycloak->getId())->first();
 
     // Então o usuário é cadastrado com dados vindos do Keycloak
-    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak['uuid'])
-        ->and($mariaLocal->nome)->toBe($this->mariaKeycloak['nome'])
-        ->and($mariaLocal->login)->toBe($this->mariaKeycloak['login'])
-        ->and($mariaLocal->email)->toBe($this->mariaKeycloak['email'])
+    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak->getId())
+        ->and($mariaLocal->nome)->toBe($this->mariaKeycloak->getName())
+        ->and($mariaLocal->login)->toBe($this->mariaKeycloak->getNickname())
+        ->and($mariaLocal->email)->toBe($this->mariaKeycloak->getEmail())
         ->and($mariaLocal->matricula)->toBe($this->mariaPolvo['matricula'])
         ->and($mariaLocal->foto)->toBe($this->mariaPolvo['foto'])
         ->and($mariaLocal->rh_tipo)->toBe($this->mariaPolvo['tipo'])
@@ -127,9 +118,9 @@ test('Cadastra usuário localmente na aplicação após o login', function () {
 test('Atualiza localmente os dados do usuário depois do login', function () {
     // Dado que o usuário já existe localmente
     User::factory()->create([
-        'uuid' => $this->mariaKeycloak['uuid'],
-        'cpf' => '123456789',
-        'matricula' => '123456',
+        'uuid' => $this->mariaKeycloak->getId(),
+        'cpf' => $this->mariaPolvo['cpf'],
+        'matricula' => $this->mariaPolvo['matricula'],
     ]);
 
     // Dado que eu não estava logado
@@ -140,12 +131,12 @@ test('Atualiza localmente os dados do usuário depois do login', function () {
     $this->get('/auth/callback/keycloak')->assertRedirect('/');
 
     // Então o cadastro do usuário é ATUALIZADO localmente com os novos dados
-    $mariaLocal = User::where('uuid', $this->mariaKeycloak['uuid'])->first();
+    $mariaLocal = User::where('uuid', $this->mariaKeycloak->getId())->first();
 
-    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak['uuid'])
-        ->and($mariaLocal->nome)->toBe($this->mariaKeycloak['nome'])
-        ->and($mariaLocal->login)->toBe($this->mariaKeycloak['login'])
-        ->and($mariaLocal->email)->toBe($this->mariaKeycloak['email'])
+    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak->getId())
+        ->and($mariaLocal->nome)->toBe($this->mariaKeycloak->getName())
+        ->and($mariaLocal->login)->toBe($this->mariaKeycloak->getNickname())
+        ->and($mariaLocal->email)->toBe($this->mariaKeycloak->getEmail())
         ->and($mariaLocal->matricula)->toBe($this->mariaPolvo['matricula'])
         ->and($mariaLocal->foto)->toBe($this->mariaPolvo['foto'])
         ->and($mariaLocal->rh_tipo)->toBe($this->mariaPolvo['tipo'])
@@ -163,12 +154,77 @@ test('Usuários que não estão na API RH tem seu cadastro criado usando CPF', f
     // Quando eu fizer login no keycloack
     $this->get('/auth/callback/keycloak');
 
-    $mariaLocal = User::where('uuid', $this->mariaKeycloak['uuid'])->first();
+    $mariaLocal = User::where('uuid', $this->mariaKeycloak->getId())->first();
 
     // Então será criado um usuário com matrícula igual ao próprio CPF
-    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak['uuid'])
-        ->and($mariaLocal->cpf)->toBe($this->mariaKeycloak['cpf'])
-        ->and($mariaLocal->matricula)->toBe($this->mariaKeycloak['cpf']);
+    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak->getId())
+        ->and($mariaLocal->cpf)->toBe($this->mariaKeycloak->user['cpf'])
+        ->and($mariaLocal->matricula)->toBe($this->mariaKeycloak->user['cpf']);
+});
+
+test('Usuário sem CPF no Keycloak não é autenticado', function () {
+    // Desliga o tratamento de exceções
+    $this->withoutExceptionHandling();
+
+    // Dado que eu não estava logado
+    $this->logout();
+
+    // Dado que o Keycloak retornou um usuário sem CPF
+    $this->mariaKeycloak->user['cpf'] = null;
+
+    // Quando eu tentar fazer o callback
+    // Então deve ser lançada uma exceção de autorização
+    $this->get('/auth/callback/keycloak');
+})->throws(AuthorizationException::class, 'Usuário não possui CPF cadastrado no Keycloak.');
+
+test('No Keycloak o CPF é uma string simples no campo `attributes`', function () {
+    // Dado que eu não estava logado
+    $this->logout();
+
+    // Dado que o Keycloak retornou o CPF via `attributes`
+    $this->mariaKeycloak->user['cpf'] = null;
+    $this->mariaKeycloak->attributes['cpf'] = '123456789';
+
+    // Quando eu fizer login no keycloack
+    $this->get('/auth/callback/keycloak')->assertRedirect('/');
+
+    // Então o cadastro é realizado localmente
+    $mariaLocal = User::where('uuid', $this->mariaKeycloak->getId())->first();
+
+    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak->getId());
+});
+
+test('No Keycloak o CPF é um array do campo `attributes`', function () {
+    // Dado que eu não estava logado
+    $this->logout();
+
+    // Dado que o Keycloak retornou o CPF via `attributes`
+    $this->mariaKeycloak->user['cpf'] = null;
+    $this->mariaKeycloak->attributes['cpf'] = ['123456789'];
+
+    // Quando eu fizer login no keycloack
+    $this->get('/auth/callback/keycloak')->assertRedirect('/');
+
+    // Então o cadastro é realizado localmente
+    $mariaLocal = User::where('uuid', $this->mariaKeycloak->getId())->first();
+
+    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak->getId());
+});
+
+test('No keycloak o CPF é um array do campo `user`', function () {
+    // Dado que eu não estava logado
+    $this->logout();
+
+    // Dado que o Keycloak retornou o CPF via `user`
+    $this->mariaKeycloak->user['cpf'] = ['123456789'];
+
+    // Quando eu fizer login no keycloack
+    $this->get('/auth/callback/keycloak')->assertRedirect('/');
+
+    // Então o cadastro é realizado localmente
+    $mariaLocal = User::where('uuid', $this->mariaKeycloak->getId())->first();
+
+    expect($mariaLocal->uuid)->toBe($this->mariaKeycloak->getId());
 });
 
 test('Redireciona para `/auth/perfil` quando há múltiplos vínculos com o RH', function () {
@@ -226,21 +282,6 @@ test('Seleciona um vínculo de RH para iniciar sessão', function () {
     // Então o segundo vínculo é o que está logado na sessão
     expect(auth()->user()->id)->toBe($vinculo2->id);
 });
-
-test('Usuário sem CPF no Keycloak não é autenticado', function () {
-    // Desliga o tratamento de exceções
-    $this->withoutExceptionHandling();
-
-    // Dado que eu não estava logado
-    $this->logout();
-
-    // Dado que o Keycloak retornou um usuário sem CPF
-    $this->keycloakUser->attributes['cpf'] = null;
-
-    // Quando eu tentar fazer o callback
-    // Então deve ser lançada uma exceção de autorização
-    $this->get('/auth/callback/keycloak');
-})->throws(AuthorizationException::class, 'Usuário não possui CPF cadastrado no Keycloak.');
 
 test('Invoca a action de Permissions adicionais da aplicação local', function () {
     // Dado que eu não estava logado

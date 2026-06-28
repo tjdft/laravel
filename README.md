@@ -51,6 +51,194 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
 <br>
 
+# Setup
+
+**Estrutura**
+
+```shell
+  |__ .docker/
+  |   |__ Dockerfile
+  |   |__ compose.yaml
+  |   |__ deploy.sh
+  |
+  |__ .gitlab-ci.yml   
+  |
+  |__ ...
+```
+
+**compose.yaml**
+
+```yaml
+name: meuapp
+
+volumes:
+    redis-volume:
+    postgres-volume:
+    postgres-teste-volume:
+
+services:
+    ######## APP ########
+    app:
+        build:
+            context: ..
+            dockerfile: .docker/Dockerfile
+            target: base
+        volumes:
+            - ../:/var/www/html:cached
+        ports:
+            - "8010:8080"
+            - "5070:5070"
+
+    ######## REDIS ########
+    redis:
+        image: redis:8.2.2
+        volumes:
+            - redis-volume:/data
+        ports:
+            - "6310:6379"
+
+    ######## POSTGRES ########
+    postgres:
+        image: postgres:17.2
+        environment:
+            - POSTGRES_DB=meuapp
+            - POSTGRES_USER=meuapp
+            - POSTGRES_PASSWORD=meuapp
+        volumes:
+            - postgres-volume:/var/lib/postgresql/data
+        ports:
+            - "54100:5432"
+
+    ######## POSTGRES TESTE ########
+    postgres-teste:
+        image: postgres:17.2
+        environment:
+            - POSTGRES_DB=meuapp
+            - POSTGRES_USER=meuapp
+            - POSTGRES_PASSWORD=meuapp
+        volumes:
+            - postgres-teste-volume:/var/lib/postgresql/data
+        ports:
+            - "54101:5432"
+```
+
+**Dockerfile**
+
+```Dockerfile
+# Base
+FROM [RL-REGISTRY]/tjdft/laravel:4.2 AS base
+COPY --chown=www-data:www-data . .
+
+# Build
+FROM base AS build
+RUN cp .env.example .env
+RUN composer install --prefer-dist --no-interaction --no-progress --quiet --ansi --no-dev
+RUN yarn install --silent && yarn build && yarn cache clean && rm -rf node_modules
+
+# Production
+FROM build AS production
+ENV RUN_DEPLOY=true
+```
+
+**deploy.sh**
+
+```shell
+#!/usr/bin/zsh
+
+# Migrations
+php artisan migrate --force
+
+# Seeders
+php artisan db:seed --force
+
+# Storage link
+php artisan storage:link
+
+# Otimiza a aplicação
+php artisan optimize
+php artisan icons:cache
+```
+
+**.gitlab-ci.yml**
+
+<!-- @formatter:off -->
+
+```yaml
+image: [URL-REGISTRY]/tjdft/laravel:4.2
+
+include:
+    -   project: "cosoft/nusof5/pipelines/laravel"
+        file: "template-podman.yml"
+
+variables:
+    OPENSHIFT_PROJECT: meuapp
+    SONAR_PROJECT: meuapp
+
+test:
+    extends: .test
+    services:
+        - name: postgres:17
+          alias: postgres-teste
+    variables:
+        DB_HOST: postgres-teste
+        POSTGRES_DB: meuapp
+        POSTGRES_USER: meuapp
+        POSTGRES_PASSWORD: meuapp        
+sonar:
+    extends: .sonar
+
+build:
+    extends: .build
+
+deploy:
+    extends: .deploy
+```
+
+<!-- @formatter:on -->
+
+**Inicie o container**
+
+```shell
+cd .docker/
+
+docker compose up -d
+
+docker compose exec app zsh
+```
+
+**Crie o projeto**
+
+```shell
+laravel new meuapp --git --pest --yarn --database=pgsql --no-interaction
+mv meuapp/*(D) .
+rm -rf meuapp
+```
+
+**Ajuste o `.env`**
+
+```dotenv
+DB_CONNECTION=pgsql
+DB_HOST=postgres
+DB_PORT=5432
+DB_DATABASE=meuapp
+DB_USERNAME=meuapp
+DB_PASSWORD=meuapp
+```
+
+**Migrate**
+
+```shell
+php artisan migrate
+```
+
+**Inicie**
+
+```
+yarn dev
+```
+
+<br>
+
 # Instalação
 
 Adicione o pacote.
@@ -62,7 +250,7 @@ composer require tjdft/laravel
 Instale maryUI incluído no pacote.
 
 ```shell
-php artisan mary:install --yarn
+php artisan mary:install --yarn --no-css
 ```
 
 Ajuste `config/app.php`
@@ -1275,153 +1463,6 @@ $this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
 ````
 
 <br>
-
-# Docker / CI
-
-**Estrutura**
-
-```shell
-  |__ .docker/
-  |   |__ Dockerfile
-  |   |__ compose.yaml
-  |   |__ deploy.sh
-  |
-  |__ .gitlab-ci.yml   
-  |
-  |__ app/
-  |
-  |__ ...
-```
-
-**compose.yaml**
-
-```yaml
-name: meuapp
-
-volumes:
-    redis-volume:
-    postgres-volume:
-    postgres-teste-volume:
-
-services:
-    ######## APP ########
-    app:
-        build:
-            context: ..
-            dockerfile: .docker/Dockerfile
-            target: base
-        volumes:
-            - ../:/var/www/html:cached
-        ports:
-            - "8010:8080"
-            - "5070:5070"
-
-    ######## REDIS ########
-    redis:
-        image: redis:8.2.2
-        volumes:
-            - redis-volume:/data
-        ports:
-            - "6310:6379"
-
-    ######## POSTGRES ########
-    postgres:
-        image: postgres:17.2
-        environment:
-            - POSTGRES_DB=meuapp
-            - POSTGRES_USER=meuapp
-            - POSTGRES_PASSWORD=meuapp
-        volumes:
-            - postgres-volume:/var/lib/postgresql/data
-        ports:
-            - "54100:5432"
-
-    ######## POSTGRES TESTE ########
-    postgres-teste:
-        image: postgres:17.2
-        environment:
-            - POSTGRES_DB=meuapp
-            - POSTGRES_USER=meuapp
-            - POSTGRES_PASSWORD=meuapp
-        volumes:
-            - postgres-teste-volume:/var/lib/postgresql/data
-        ports:
-            - "54101:5432"
-```
-
-**Dockerfile**
-
-```Dockerfile
-# Base
-FROM URL-REGISTRY/tjdft/laravel:4.2 AS base
-COPY --chown=www-data:www-data . .
-
-# Build
-FROM base AS build
-RUN cp .env.example .env
-RUN composer install --prefer-dist --no-interaction --no-progress --quiet --ansi --no-dev
-RUN yarn install --silent && yarn build && yarn cache clean && rm -rf node_modules
-
-# Production
-FROM build AS production
-ENV RUN_DEPLOY=true
-```
-
-**deploy.sh**
-
-```shell
-#!/usr/bin/zsh
-
-# Migrations
-php artisan migrate --force
-
-# Seeders
-php artisan db:seed --force
-
-# Storage link
-php artisan storage:link
-
-# Otimiza a aplicação
-php artisan optimize
-php artisan icons:cache
-```
-
-**.gitlab-ci.yml**
-
-<!-- @formatter:off -->
-
-```yaml
-image: URL-REGISTRY/tjdft/laravel:4.2
-
-include:
-    -   project: "cosoft/nusof5/pipelines/laravel"
-        file: "template-podman.yml"
-
-variables:
-    OPENSHIFT_PROJECT: pessoas
-    SONAR_PROJECT: pessoas
-
-test:
-    extends: .test
-    services:
-        - name: postgres:17
-          alias: postgres-teste
-    variables:
-        DB_HOST: postgres-teste
-        POSTGRES_DB: meuapp
-        POSTGRES_USER: meuapp
-        POSTGRES_PASSWORD: meuapp        
-sonar:
-    extends: .sonar
-
-build:
-    extends: .build
-
-deploy:
-    extends: .deploy
-```
-
-<!-- @formatter:on -->
 
 # Desenvolvimento local
 

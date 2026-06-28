@@ -67,23 +67,40 @@ Pacote unificado para desenvolvimento de aplicações Laravel no TJDFT.
 
 Adicione o pacote.
 
-```bash
+```shell
 composer require tjdft/laravel
 ```
 
 Instale maryUI incluído no pacote.
 
-```
+```shell
 php artisan mary:install --yarn
 ```
 
 Altere o idioma em `.env`
 
-```bash
+```dotenv
 APP_LOCALE=pt_BR
 ```
 
-Adicione as configurações de middleware e exceptions em `bootstrap/app.php`.
+Ajuste  `tests/Pest.php`.
+
+```php
+
+pest()->extend(Tests\TestCase::class)->in('Feature', 'Unit');
+```
+
+Adicione este trecho ao final de `resources/css/app.css`.
+
+```css
+/********************************************
+* Importa tema do pacote `tjdft/laravel`
+*********************************************/
+
+@import "../../vendor/tjdft/laravel/resources/css/tjdft.css";
+```
+
+Ajuste `bootstrap/app.php`.
 
 ```php
 use TJDFT\Laravel\Exceptions\ExceptionHandler;
@@ -99,21 +116,35 @@ use TJDFT\Laravel\Exceptions\ExceptionHandler;
 })
 ```
 
-Ajuste  `tests/Pest.php`.
+Ajuste  `app/Models/User.php`.
 
 ```php
+use TJDFT\Laravel\Traits\HasGrant;
+use TJDFT\Laravel\Traits\HasImpersonate;
+use TJDFT\Laravel\Traits\HasSearchAny;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+// ...
 
-pest()->extend(Tests\TestCase::class)->in('Feature', 'Unit');
-```
-
-Adicione este trecho em `resources/css/app.css`.
-
-```css
-/********************************************
-* Importa tema do pacote `tjdft/laravel`
-*********************************************/
-
-@import "../../vendor/tjdft/laravel/resources/css/tjdft.css";
+class User extends Authenticatable
+{
+    use HasGrant, HasImpersonate, HasSearchAny;
+    
+    //...
+    
+    public function primeiroNome(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => str($this->nome)->explode(' ')->first(),
+        );
+    }
+    
+    protected function casts(): array
+    {
+        return [
+            'localizacao' => 'object'
+        ];
+    }
+}
 ```
 
 Ajuste  `tests/TestCase.php`.
@@ -137,7 +168,7 @@ abstract class TestCase extends BaseTestCase
 
 Crie as novas variáveis de ambiente em `.env`.
 
-```bash
+```dotenv
 # Sentry
 TJDFT_SENTRY_LARAVEL_DSN=
 
@@ -193,7 +224,7 @@ Schema::create('users', function (Blueprint $table) {
 
 Rode as migrations.
 
-```bash
+```shell
 # Esta ação destruirá e recriará o banco!
 
 php artisan migrate:fresh --seed
@@ -227,32 +258,12 @@ Para o **logout** de usuários utilize a rota `/auth/logout/keycloak`.
 ```
 <!-- @formatter:on -->
 
-Usuários com **mais de um vínculo no RH** serão redirecionados automaticamente para a rota `/auth/perfil`.
-
-```
-Ex: Se o usuário possui vínculo de Pensão Alimentícia e Servidor, então ele deve selecionar um perfil para acesso.
-```
+Usuários com **mais de um vínculo no RH** serão redirecionados automaticamente para a rota `/auth/perfil` para seleção do perfil de acesso.
 
 ```html
 <!-- Opção em menu para alternar o perfil -->
 
 <x-menu-item title="Alterar perfil" link="/auth/perfil" />
-```
-
-Consulte o tópico **[Autorização](#autorização)** para mais detalhes sobre **permissões**.
-
-```php
-pubfic function mount(): void 
-{    
-    // Lança uma exceção 403 se o usuário não tiver a permissão
-    auth()->user()->authorize("comprovante.visualizar");   
-}
-```
-
-```html
-<!-- Se não tem a permissão, oculta o menu -->
-
-<x-menu-item title="Criar Página" link="/paginas/create" :hidden="auth()->user()->cannot('paginas.criar')" />
 ```
 
 <br>
@@ -265,21 +276,6 @@ Utilize a rota `/auth/permissions` para acessar o gerenciamento de permissões.
 <x-menu-item title="Permissões" link="/auth/permissions" :hidden="auth()->user()->cannot('permissoes.gerenciar')" />
 ```
 <!-- @formatter:on -->
-
-
-Adicione o trait `HasGrant` no model `User`.
-
-```php
-use TJDFT\Laravel\Traits\HasGrant;
-// ...
-
-class User extends Authenticatable
-{
-    use HasGrant;
-    
-    //...
-}
-```
 
 Estas são as roles e permissions iniciais registradas automaticamente pelo pacote.
 
@@ -439,7 +435,7 @@ class DatabaseSeeder extends Seeder
 
 Rode as migrations.
 
-```bash
+```shell
 # Esta ação destruirá e recriará o banco!
 
 php artisan migrate:fresh --seed
@@ -447,24 +443,111 @@ php artisan migrate:fresh --seed
 
 <br>
 
-# Impersonate
+# Fotos
 
-Adicione o trait `HasImpersonate` no model `User`.
+Rota interna para recuperar fotos dos usuários.
+
+```html
+<!-- Retorna: https://<URL-FOTOS>/123456.jpg -->
+
+<img src="/tjdft/fotos/12345" />
+```
+
+<br>
+
+# Sentry
+
+Integração com o **SENTRY** para monitoramento de erros.
+
+```dotenv
+# URL obtida no SENTRY ao configurar o novo projeto.
+# Em localhost mantenha vazio, de outra forma os erros não serão reportados ao Sentry.
+
+TJDFT_SENTRY_LARAVEL_DSN=
+```
+
+<br>
+
+# SMAX
+
+Integração com o **SMAX** (Central de Atendimento).
 
 ```php
-use TJDFT\Laravel\Traits\HasImpersonate;
-// ...
+// Texto
+$conteudo = 'Não consigo acessar a página de comprovantes.';
 
-class User extends Authenticatable
+// A url da página que usuário está visualizando no momento.
+$url = request()->header('Referer') ?? url()->previous(),
+
+
+// Cria a requisição
+new SmaxService()->criarRequisicao($conteudo, $url);
+```
+
+Em caso de falha o conteúdo será enviado os destinatários configurados.
+
+```dotenv
+# Separado por vírgula
+
+TJDFT_SMAX_FALLBACK_EMAILS=
+```
+
+<br>
+
+# API RH
+
+Crie serviços de consulta baseados na classe `PolvoService`.
+
+```php
+namespace App\Services;
+
+use Illuminate\Support\Collection;
+use TJDFT\Laravel\Services\PolvoService;
+
+
+class FeriasPolvoService extends PolvoService
 {
-    use HasImpersonate;
-    
-    //...
+     public function porMatricula(string $matricula): Collection
+     {
+        $query = "{ ... query GraphQL ... }";
+        
+        // Método herdado da classe PolvoService
+        $response = $this->graphql($query);
+
+        return collect($response['data']['servidor']['dadosFuncionais']['ferias']['data'] ?? []);
+     } 
 }
 ```
 
-Utilize a rota `/auth/impersonate` para a funcionalidade de **personificação** de usuários.  
-Funcionalidade disponível apenas para usuários com a permissão `impersonate`.
+Todas as consultas GraphQL tem um prazo de cache padrão de **1 hora**.
+
+```dotenv
+TJDFT_POLVO_CACHE_TTL='1 hour'.   
+```
+
+Pra definir um prazo específico apenas para algumas consultas, utilize o método `lembrar()`.
+
+```php
+$ferias = new FeriasPolvoService()->lembrar('1 day')->porMatricula("12345");
+```
+
+Para desabilitar o cache em consultas específicas, utilize o método `semCache()`.
+
+```php
+$ferias = new FeriasPolvoService()->semCache()->porMatricula("12345");
+```
+
+Para desabilitar completamente o cache tem todas as consultas GraphQL ajuste a variável de ambiente.
+
+```dotenv
+TJDFT_POLVO_CACHE_TTL='0'
+```
+
+<br>
+
+# Impersonate
+
+Utilize a rota `/auth/impersonate` para a funcionalidade de **personificação** de usuários.
 
 <!-- @formatter:off -->
 ```html
@@ -524,6 +607,103 @@ DB::statement("CREATE INDEX idx_meu_indice ON minha_tabela USING gin (immutable_
 
 <br>
 
+# Paginação
+
+Utilize o trait `WithPaginationAndReset` nas telas com tabelas.  
+Quando os filtros forem alterados, a paginação será resetada automaticamente.
+
+```php
+use TJDFT\Laravel\Traits\WithPaginationAndReset;
+// ...
+
+new class extends Component {
+
+    use WithPaginationAndReset;
+
+    // ...
+}
+```
+
+Limpa propriedades de filtro e resetar paginação.
+
+```html
+<!-- Invoca manualmente o reset de paginação e propriedades de filtro -->
+
+<x-button label="Limpar" wire:click="clear()" />
+```
+
+<br>
+
+# Ícones
+
+Este pacote inclui um conjunto extra de ícones para utilização nos componentes do **maryUI**.
+
+- https://lucide.dev/icons **(preferencial)**
+- https://heroicons.com
+- https://icons.getbootstrap.com
+
+```html
+<!-- Hero Icons possuem prefixo "o-" -->
+<x-button label="Salvar" icon="o-check" />
+
+<!-- Lucide Icons possuem prefixo "lucide." -->
+<x-button label="Consulta" icon="lucide.users" />
+
+<!-- Bootstrap Icons possuem prefixo "bi." -->
+<x-button label="Contato" icon="bi.whatsapp" />
+```
+
+<br>
+
+# Lazy spinner
+
+Para componentes  `lazy` , adicione o trait `HasSpinnerPlaceholder` para exibir um spinner de carregamento enquanto o componente é renderizado.
+
+```html
+<!-- Adicione `lazy` -->
+<livewire:algum-componente lazy />
+```
+
+```php
+# Componente lazy
+
+use TJDFT\Laravel\Traits\HasSpinnerPlaceholder;
+// ...
+
+new class extends Component {
+
+    use HasSpinnerPlaceholder;
+    
+    // ...
+}
+```
+
+<br>
+
+# Validação (pt-BR)
+
+As mensagens de validação estão traduzidas.
+
+```php
+'required' => 'O campo :attribute é obrigatório.'
+
+// ...
+```
+
+Validações adicionais para formatos dos sistemas brasileiros via  `laravellegends/pt-br-validator`.
+
+```php
+// Verifica se é um número de CPF válido
+#[Validate('required|cpf')]
+public ?string $cpf = null;
+
+// Valida se é num formato válido de CEP
+#[Validate('nullable|formato_cep')]
+public ?string $cep = null;
+```
+
+<br>
+
 # Exceptions
 
 Utilize a classe `AppException` na lógica de negócio para automaticamente exibir um **toast** do **maryUI**.
@@ -536,6 +716,31 @@ if ($consignacao->status_id === Status::FINALIZADA) {
     throw new AppException("Este contrato não pode ser alterado.");
 }
 ```
+
+# Casts
+
+Casts personalizados para formatação de atributos em models Eloquent.
+
+```php
+use TJDFT\Laravel\Casts\NumeroCast;
+use TJDFT\Laravel\Casts\CompetenciaCast;
+// ...
+
+class Estagiario extends Model
+{
+    // ...
+
+    protected function casts(): array 
+    {
+        return [
+            'cpf' => NumeroCast::class,            # Unidirecional: Remove formatação e grava apenas números.
+            'semestre' => CompetenciaCast::class   # Bidirecional: Grava no formato `anomes` e recupera um `Carbon`. 
+        ];
+    }
+}
+``` 
+
+<br>
 
 <br>
 
@@ -584,222 +789,7 @@ Telefone::formatado(null, "-")       # Se for nulo mostra "-"
 
 <br>
 
-# Lazy spinner
-
-Para componentes  `lazy` , adicione o trait `HasSpinnerPlaceholder` para exibir um spinner de carregamento enquanto o componente é renderizado.
-
-```html
-<!-- Adicione `lazy` -->
-<livewire:algum-componente lazy />
-```
-
-```php
-# Componente lazy
-
-use TJDFT\Laravel\Traits\HasSpinnerPlaceholder;
-// ...
-
-new class extends Component {
-
-    use HasSpinnerPlaceholder;
-    
-    // ...
-}
-```
-
-<br>
-
-# Ícones
-
-Este pacote inclui um conjunto extra de ícones para utilização nos componentes do **maryUI**.
-
-- https://lucide.dev/icons **(preferencial)**
-- https://heroicons.com
-- https://materialdesignicons.com
-
-```html
-<!-- Hero Icons possuem prefixo "o-" -->
-<x-button label="Salvar" icon="o-check" />
-
-<!-- Lucide Icons possuem prefixo "lucide." -->
-<x-button label="Consulta" icon="lucide.users" />
-
-<!-- MDI Icons possuem prefixo "mdi." -->
-<x-button label="Contato" icon="bi.whatsapp" />
-```
-
-<br>
-
-# Casts
-
-Casts personalizados para formatação de atributos em models Eloquent.
-
-```php
-use TJDFT\Laravel\Casts\NumeroCast;
-use TJDFT\Laravel\Casts\CompetenciaCast;
-// ...
-
-class Estagiario extends Model
-{
-    // ...
-
-    protected function casts(): array 
-    {
-        return [
-            'cpf' => NumeroCast::class,            # Unidirecional: Remove formatação e grava apenas números.
-            'semestre' => CompetenciaCast::class   # Bidirecional: Grava no formato `anomes` e recupera um `Carbon`. 
-        ];
-    }
-}
-``` 
-
-<br>
-
-# Paginação
-
-Utilize o trait `WithPaginationAndReset` nas telas com tabelas.  
-Quando os filtros forem alterados, a paginação será resetada automaticamente.
-
-```php
-use TJDFT\Laravel\Traits\WithPaginationAndReset;
-// ...
-
-new class extends Component {
-
-    use WithPaginationAndReset;
-
-    // ...
-}
-```
-
-Limpa propriedades de filtro e resetar paginação.
-
-```html
-<!-- Invoca manualmente o reset de paginação e propriedades de filtro -->
-
-<x-button label="Limpar" wire:click="clear()" />
-```
-
-<br>
-
-# Validação (pt-BR)
-
-As principais mensagens de validação estão traduzidas para o português brasileiro.
-
-Este pacote também inclui validações adicionais para formatos comuns em sistemas brasileiros via  `LaravelLegends/pt-br-validator`.
-
-```php
-// Verifica se é um número de CPF válido
-#[Validate('required|cpf')]
-public ?string $cpf = null;
-
-// Valida se é num formato válido de CEP
-#[Validate('nullable|formato_cep')]
-public ?string $cep = null;
-```
-
-<br>
-
-# Sentry
-
-Este pacote possui a integração com o **SENTRY** para monitoramento de erros.
-
-🚨 Lembre-se de ajustar o arquivo `.env`
-
-```php
-# URL obtida no SENTRY ao configurar o novo projeto.
-# Localmente mantenha a URL em branco.
-# Caso contrário os erros do ambiente de desenvolvimento serão reportados no Sentry.
-
-TJDFT_SENTRY_LARAVEL_DSN=
-```
-
-<br>
-
-# SMAX
-
-Este pacote possui a integração com o **SMAX** (Central de Atendimento).
-
-Em caso de indisponibilidade da API, um e-mail será enviado para os destinatários configurados em `TJDFT_SMAX_FALLBACK_EMAILS`.
-
-🚨 Lembre-se de ajustar o arquivo `.env`
-
-```php
-// Texto
-$conteudo = 'Não consigo acessar a página de comprovantes.';
-
-// A url da página que usuário está visualizando no momento.
-$url = request()->header('Referer') ?? url()->previous(),
-
-
-// Cria a requisição
-new SmaxService()->criarRequisicao($conteudo, $url);
-```
-
-<br>
-
-# API RH
-
-Este pacote possui a classe base para consultas na API RH.
-
-🚨 Lembre-se de ajustar o arquivo `.env`
-
-```php
-class PolvoService { ... }
-```
-
-Crie serviços de consulta baseados na classe `TJDFT\Laravel\Services\PolvoService`.
-
-```php
-namespace App\Services;
-
-use Illuminate\Support\Collection;
-use TJDFT\Laravel\Services\PolvoService;
-
-
-class FeriasPolvoService extends PolvoService
-{
-     public function porMatricula(string $matricula): Collection
-     {
-        $query = "{ ... query GraphQL ... }";
-        
-        // Método herdado da classe PolvoService
-        $response = $this->graphql($query);
-
-        return collect($response['data']['servidor']['dadosFuncionais']['ferias']['data'] ?? []);
-     } 
-}
-```
-
-Todas as consultas GraphQL tem um prazo de cache padrão de **1 hora**.
-
-```bash
-TJDFT_POLVO_CACHE_TTL='1 hour'.   
-```
-
-Pra definir um prazo específico apenas para algumas consultas, utilize o método `lembrar()`.
-
-```php
-$ferias = new FeriasPolvoService()->lembrar('1 day')->porMatricula("12345");
-```
-
-Para desabilitar o cache em consultas específicas, utilize o método `semCache()`.
-
-```php
-$ferias = new FeriasPolvoService()->semCache()->porMatricula("12345");
-```
-
-Para desabilitar completamente o cache tem todas as consultas GraphQL ajuste a variável de ambiente.
-
-```bash
-TJDFT_POLVO_CACHE_TTL='0'
-```
-
-<br>
-
 # Auditoria
-
-Este pacote possui a integração com o `owen-it/laravel-auditing` para registro de auditoria.
 
 Utilize o trait `Auditavel` e implemente a interface `AuditavelContract` nos models que deseja auditar.
 
@@ -819,10 +809,10 @@ class Pagina extends Model implements AuditavelContract
 
 ```
 
-Para visualizar os registros de auditoria utilize o componente passando como parametro a instância de um model auditável.
+Para visualizar os registros de auditoria utilize o componente passando como parâmetro a instância de um model auditável.
 
 ```html
-<!-- Ex: Página de dição da rubrica" -->
+<!-- Ex: Página de edição da rubrica" -->
 
 <div>
     <!-- Cabeçalho -->
@@ -830,9 +820,6 @@ Para visualizar os registros de auditoria utilize o componente passando como par
         <x-slot:actions>
             <!-- Histórico de auditoria -->
             <livewire:tjdft::auditoria :model="$rubrica" />
-
-            <!-- Excluir página -->
-            <x-button label="Excluir" wire:click="excluir" />
         </x-slot:actions>
     </x-header>
 

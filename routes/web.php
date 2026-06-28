@@ -11,9 +11,6 @@ Route::middleware('web')->group(function () {
     Route::get('/auth/callback/keycloak', [KeycloakController::class, 'callback']);
     Route::get('/auth/logout/keycloak', [KeycloakController::class, 'logout']);
 
-    // Fotos
-    Route::get('/tjdft/fotos/{matricula}', [FotoController::class, 'show']);
-
     // Imagem padrão do usuário
     Route::get('/user.png', function () {
         return response()->file(__DIR__ . '/../public/user.png')->setCache(['max_age' => 86400, 'public' => true]);
@@ -26,6 +23,9 @@ Route::middleware('web')->group(function () {
 });
 
 Route::middleware(['web', 'auth'])->group(function () {
+    // Fotos
+    Route::get('/tjdft/fotos/{matricula}', [FotoController::class, 'show']);
+
     // Seleção de perfil
     Route::livewire('/auth/perfil', 'tjdft::perfil');
 

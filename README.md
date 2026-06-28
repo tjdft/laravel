@@ -89,6 +89,8 @@ Ajuste `resources/css/app.css`.
 
 Ajuste `vite.config.js`.
 
+<!-- @formatter:off -->
+
 ```js
 // ...
 
@@ -99,7 +101,20 @@ input: [
 ]
 
 // ...
+
+server: {
+    host: "0.0.0.0",
+        port: 5070,
+        hmr: {
+        host: "localhost",
+            clientPort: 5070
+    },
+    
+    //...
+}
 ```
+
+<!-- @formatter:on -->
 
 Ajuste `bootstrap/app.php`.
 
@@ -268,6 +283,48 @@ Date::serializeUsing(function ($date) {
     return $date->format('Y-m-d H:i:s');
 });
 ```
+
+---
+
+🔥 Utilize estes composer scripts.
+
+<!-- @formatter:off -->
+
+```json
+// ...
+
+"scripts": {
+    "test": [
+        "@php artisan config:clear --ansi",
+        "@php artisan test --parallel --compact --no-coverage"
+    ],
+    "test:watch": [
+        "Composer\\Config::disableProcessTimeout",
+        "phpunit-watcher watch --compact --filter='xxxxxx' < /dev/tty"
+    ],
+    "test:coverage": [
+        "php -d pcov.enabled=1 ./vendor/bin/pest --compact --coverage --log-junit=.coverage/report.xml --coverage-html=.coverage/html --coverage-clover=.coverage/clover.xml --coverage-cobertura=.coverage/cobertura.xml"
+    ],
+    "start": [
+          "Composer\\Config::disableProcessTimeout",
+          "composer install",
+          "php artisan key:generate",
+          "php artisan migrate:fresh --seed",
+          "php artisan optimize:clear",
+          "php artisan storage:link",
+          "rm -rf public/build",
+          "yarn cache clean",
+          "yarn install",
+          "yarn dev"
+    ],
+
+  // ...
+}
+
+// ...
+```
+
+<!-- @formatter:on -->
 
 <br>
 
@@ -1018,6 +1075,63 @@ protected function auditoria(): array
 
 # Testes
 
+**Scripts**
+
+```shell
+# Roda os testes
+composer test
+
+# Roda os testes em modo watch 
+composer test:watch
+
+# Roda os testes com cobertura de código
+composer test:coverage
+```
+
+**phpunit.xml**
+
+```xml
+// ...
+
+<env name="DB_HOST" value="postgres-teste"/>
+<env name="DB_CONNECTION" value="pgsql"/>
+<env name="DB_DATABASE" value="meuapp"/> 
+```
+
+Crie o arquivo `.coverage/.gitgnore` com este conteúdo.
+
+```
+*
+!.gitignore
+```
+
+**User factory**
+
+```php
+// ...
+
+public function definition(): array
+{
+    return [
+        'uuid' => $this->faker->unique()->uuid,
+        'login' => $this->faker->unique()->userName,
+        'matricula' => $this->faker->unique()->randomNumber(4),
+        'cpf' => $this->faker->unique()->numerify('###########'),
+        'nome' => $this->faker->name,
+        'email' => $this->faker->unique()->safeEmail,
+        'foto' => $this->faker->imageUrl,
+        'rh_tipo' => $this->faker->randomElement(['MAGISTRADO', 'SERVIDOR']),
+        'rh_status' => $this->faker->randomElement(['ATIVO', 'INATIVO']),
+        'localizacao' => [
+            'id' => 1,
+            'codigo' => '10002000300',
+            'sigla' => 'LOC',
+            'nome' => 'localizacao',
+        ],
+    ];
+}
+```
+
 **EXEMPLO: `login()`**
 
 ```php
@@ -1082,35 +1196,6 @@ test('Visitantes não podem ver páginas secretas.', function () {
 });
 ```
 
-**EXEMPLO: `assertPolvoQueryContains()`**
-
-```php
-test('Consulta movimentações', function () {
-
-    // Quando eu definir o período e consultar
-    Livewire::test('pages::movimentacoes')
-        ->set('data_inicio', '2020-07-20')
-        ->set('data_fim', '2020-07-22')
-        ->call('consultar');
-
-    // Então a query GraphQL que foi executada pelo PolvoService deve conter o período correto
-    $this->assertPolvoQueryContains('
-            movimentacoes(
-                periodo: {dataInicio: "2020-07-20" dataFim: "2020-07-22"}                
-    ');
-});
-````
-
-**EXEMPLO: `assertPolvoQueryNotContains()`**
-
-```php
-// Dado que eu estou visualizando a unidade `12345`
-$this->get('/unidades/12345');
-
-// Então query GraphQL que foi executada pelo PolvoService NÃO contém um trecho esperado
-$this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
-````
-
 <br>
 
 # GraphQL Faker
@@ -1160,7 +1245,183 @@ return [
 ];
 ```
 
+**EXEMPLO: `assertPolvoQueryContains()`**
+
+```php
+test('Consulta movimentações', function () {
+
+    // Quando eu definir o período e consultar
+    Livewire::test('pages::movimentacoes')
+        ->set('data_inicio', '2020-07-20')
+        ->set('data_fim', '2020-07-22')
+        ->call('consultar');
+
+    // Então a query GraphQL que foi executada pelo PolvoService deve conter o período correto
+    $this->assertPolvoQueryContains('
+            movimentacoes(
+                periodo: {dataInicio: "2020-07-20" dataFim: "2020-07-22"}                
+    ');
+});
+````
+
+**EXEMPLO: `assertPolvoQueryNotContains()`**
+
+```php
+// Dado que eu estou visualizando a unidade `12345`
+$this->get('/unidades/12345');
+
+// Então query GraphQL que foi executada pelo PolvoService NÃO contém um trecho esperado
+$this->assertPolvoQueryNotContains("localizacao (codigo: 'errado') ";
+````
+
 <br>
+
+# Docker / CI
+
+**Estrutura**
+
+```shell
+  |__ .docker/
+  |   |__ Dockerfile
+  |   |__ compose.yaml
+  |   |__ deploy.sh
+  |
+  |__ .gitlab-ci.yml   
+  |
+  |__ app/
+  |
+  |__ ...
+```
+
+**compose.yaml**
+
+```yaml
+name: meuapp
+
+volumes:
+    redis-volume:
+    postgres-volume:
+    postgres-teste-volume:
+
+services:
+    ######## APP ########
+    app:
+        build:
+            context: ..
+            dockerfile: .docker/Dockerfile
+            target: base
+        volumes:
+            - ../:/var/www/html:cached
+        ports:
+            - "8010:8080"
+            - "5070:5070"
+
+    ######## REDIS ########
+    redis:
+        image: redis:8.2.2
+        volumes:
+            - redis-volume:/data
+        ports:
+            - "6310:6379"
+
+    ######## POSTGRES ########
+    postgres:
+        image: postgres:17.2
+        environment:
+            - POSTGRES_DB=meuapp
+            - POSTGRES_USER=meuapp
+            - POSTGRES_PASSWORD=meuapp
+        volumes:
+            - postgres-volume:/var/lib/postgresql/data
+        ports:
+            - "54100:5432"
+
+    ######## POSTGRES TESTE ########
+    postgres-teste:
+        image: postgres:17.2
+        environment:
+            - POSTGRES_DB=meuapp
+            - POSTGRES_USER=meuapp
+            - POSTGRES_PASSWORD=meuapp
+        volumes:
+            - postgres-teste-volume:/var/lib/postgresql/data
+        ports:
+            - "54101:5432"
+```
+
+**Dockerfile**
+
+```Dockerfile
+# Base
+FROM URL-REGISTRY/tjdft/laravel:4.2 AS base
+COPY --chown=www-data:www-data . .
+
+# Build
+FROM base AS build
+RUN cp .env.example .env
+RUN composer install --prefer-dist --no-interaction --no-progress --quiet --ansi --no-dev
+RUN yarn install --silent && yarn build && yarn cache clean && rm -rf node_modules
+
+# Production
+FROM build AS production
+ENV RUN_DEPLOY=true
+```
+
+**deploy.sh**
+
+```shell
+#!/usr/bin/zsh
+
+# Migrations
+php artisan migrate --force
+
+# Seeders
+php artisan db:seed --force
+
+# Storage link
+php artisan storage:link
+
+# Otimiza a aplicação
+php artisan optimize
+php artisan icons:cache
+```
+
+**.gitlab-ci.yml**
+
+<!-- @formatter:off -->
+
+```yaml
+image: URL-REGISTRY/tjdft/laravel:4.2
+
+include:
+    -   project: "cosoft/nusof5/pipelines/laravel"
+        file: "template-podman.yml"
+
+variables:
+    OPENSHIFT_PROJECT: pessoas
+    SONAR_PROJECT: pessoas
+
+test:
+    extends: .test
+    services:
+        - name: postgres:17
+          alias: postgres-teste
+    variables:
+        DB_HOST: postgres-teste
+        POSTGRES_DB: meuapp
+        POSTGRES_USER: meuapp
+        POSTGRES_PASSWORD: meuapp        
+sonar:
+    extends: .sonar
+
+build:
+    extends: .build
+
+deploy:
+    extends: .deploy
+```
+
+<!-- @formatter:on -->
 
 # Desenvolvimento local
 

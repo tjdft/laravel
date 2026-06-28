@@ -228,7 +228,7 @@ php artisan migrate:fresh --seed
 
 ---
 
-🚨 Configurações padrões ativadas por este pacote.
+🚨 Configuração padrão ativada por este pacote.
 
 ```php
 // Proíbe comandos destrutivos em produção

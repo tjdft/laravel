@@ -101,7 +101,7 @@ new class extends Component {
     </x-card>
 
     {{--  FILTROS  --}}
-    <x-drawer title="Filros" wire:model="filtros" separator with-close-button right class="w-full lg:w-4/12">
+    <x-drawer title="Filtros" wire:model="filtros" separator with-close-button right class="w-full lg:w-4/12">
         <div class="grid gap-5">
             <x-input label="Pessoa" placeholder="Nome ou matrícula ..." wire:model.live.debounce="search" icon="lucide.search" clearable />
             <x-select label="Permission" wire:model.live="permission_id" :options="$permissions" option-value="name" option-label="description" placeholder="Selecione" />

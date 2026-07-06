@@ -12,7 +12,7 @@ return [
      * Nome do schema onde deverá ser criada as extensões do PostgreSQL.
      */
     'pgsql_extensions' => [
-        'schema' => env('TJDFT_PGSQL_EXTENSIONS_SCHEMA', '')
+        'schema' => env('TJDFT_PGSQL_EXTENSIONS_SCHEMA', 'public')
     ],
 
     // ACL

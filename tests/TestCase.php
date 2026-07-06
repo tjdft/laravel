@@ -103,6 +103,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
                 return str(parent::compileSelect($query))
                     ->replace('::text', '')
                     ->replace('ILIKE', 'LIKE')
+                    ->replace('public.', '')
                     ->toString();
             }
         });

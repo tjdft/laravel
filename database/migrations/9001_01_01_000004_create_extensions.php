@@ -9,7 +9,7 @@ return new class extends Migration {
     public function up(): void
     {
         // Verifica se o banco é PGSQL
-        if (config('database.default') !== 'pgsql') {
+        if (! str(config('database.default'))->contains('pgsql')) {
             return;
         }
 

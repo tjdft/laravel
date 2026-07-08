@@ -10,6 +10,14 @@ return new class extends Migration {
     {
         $tables = config('tjdft.acl.tables');
 
+        if (Schema::hasTable($tables['permissions'])) {
+            return;
+        }
+
+        if (Schema::hasTable($tables['grants'])) {
+            return;
+        }
+
         Schema::create($tables['permissions'], function (Blueprint $table) {
             $table->id();
             $table->string('name');

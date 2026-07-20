@@ -2,6 +2,8 @@
 
 namespace TJDFT\Laravel\Traits;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use TJDFT\Laravel\Models\Grant;
@@ -48,7 +50,11 @@ trait HasGrant
 
     public function can($abilities, $arguments = []): bool
     {
-        return $this->grant?->permissions?->contains($abilities) ?? false;
+        if (str($abilities)->contains('*')) {
+            $abilities = str($abilities)->replace('*', '')->toString();
+        }
+
+        return $this->grant?->permissions?->contains(fn(string $item) => str($item)->contains($abilities)) ?? false;
     }
 
     public function cannot($abilities, $arguments = []): bool
@@ -66,7 +72,7 @@ trait HasGrant
     // Possui a permission específica
     public function hasPermission(string $permission): bool
     {
-        return $this->grant?->permissions?->contains($permission) ?? false;
+        return $this->can($permission);
     }
 
     // Possui qualquer uma das permissions informadas
@@ -80,4 +86,11 @@ trait HasGrant
     {
         return $this->hasPermission('permissoes.gerenciar');
     }
+
+    #[Scope]
+    public function admin(Builder $query): Builder
+    {
+        return $query->whereHas('grant', fn($query) => $query->whereJsonContains('permissions', 'permissoes.gerenciar'));
+    }
 }
+

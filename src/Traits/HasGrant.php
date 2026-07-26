@@ -27,7 +27,8 @@ trait HasGrant
 
         $permissions = is_array($permissions) || is_string($permissions) ? collect($permissions) : collect($permissions)->pluck('name');
 
-        $grant->permissions = $grant->permissions?->merge($permissions)->filter()->unique() ?? $permissions;
+        $grant->permissions = $grant->permissions?->merge($permissions)->filter()->unique()->all() ?? $permissions->all();
+
         $grant->save();
     }
 

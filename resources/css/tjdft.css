@@ -14,7 +14,6 @@
     themes: light --default, dark --prefersdark;
 }
 
-
 /* Theme toggle */
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -64,11 +63,11 @@ em {
 /********************************************
  Tabelas
 *********************************************/
-.arrows td:last-child {
+.arrows td:last-child:not([colspan]) {
     @apply relative pr-8;
 }
 
-.arrows td:last-child:after {
+.arrows td:last-child:not([colspan]):after {
     content: '›';
     @apply text-gray-300 text-2xl absolute right-2 top-1/2 transform -translate-y-1/2;
 }

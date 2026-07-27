@@ -51,7 +51,7 @@ trait HasGrant
 
     public function can($abilities, $arguments = []): bool
     {
-        if (app()->runningInConsole()){
+        if (app()->runningInConsole() && !app()->runningUnitTests()) {
             return true;
         }
 

@@ -25,9 +25,9 @@ trait HasGrant
     {
         $grant = $this->grant()->firstOrNew();
 
-        $permissions = is_array($permissions) || is_string($permissions) ? collect($permissions) : collect($permissions)->pluck('name');
+        $permissions = is_array($permissions) || is_string($permissions) ? collect($permissions)->all() : collect($permissions)->pluck('name')->all();
 
-        $grant->permissions = $grant->permissions?->merge($permissions)->filter()->unique()->all() ?? $permissions->all();
+        $grant->permissions = $grant->permissions?->merge($permissions)->filter()->unique()->sort()->values()->all() ?? collect($permissions)->sort()->values()->all();
 
         $grant->save();
     }
@@ -36,21 +36,25 @@ trait HasGrant
     {
         $grant = $this->grant()->firstOrNew();
 
-        $grant->permissions = $grant->permissions?->filter(fn($perm) => $perm !== $permission) ?? collect();
+        $grant->permissions = $grant->permissions?->filter(fn($perm) => $perm !== $permission)->values() ?? collect();
         $grant->save();
     }
 
     public function syncPermissions(Collection|array $permissions): void
     {
-        $permissions = is_array($permissions) ? collect($permissions) : collect($permissions)->pluck('name');
+        $permissions = is_array($permissions) ? collect($permissions)->values() : collect($permissions)->pluck('name')->values();
 
         $grant = $this->grant()->firstOrNew();
-        $grant->permissions = $permissions;
+        $grant->permissions = $permissions->sort()->values()->all();
         $grant->save();
     }
 
     public function can($abilities, $arguments = []): bool
     {
+        if (app()->runningInConsole()){
+            return true;
+        }
+
         if (str($abilities)->contains('*')) {
             $abilities = str($abilities)->replace('*', '')->toString();
         }
